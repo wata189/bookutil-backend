@@ -1,23 +1,36 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application, RequestHandler, Request, Response, NextFunction } from "express";
+
+import {STATUS_CODES, sendJson} from './modules/util';
+import {catchError, catchNotFound} from './modules/errorUtil';
 
 const app: Application = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+//TODO:corsの設定
 
-app.get("/", async (req: Request, res: Response) => {
-  return res.status(200).send({
-    message: "Hello World!",
-  });
-});
+//body-parserの設定
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
 
-const port = process.env.PORT || 8000;
+// TODO:accessログ
+// app.use(connectAccessLogger);
+
+// ルーティング
+const router = require("./controller.ts");
+app.use("/", router);
+
+app.use(catchNotFound); // いずれのルーティングにもマッチしない(=NOT FOUND)をキャッチ
+app.use(catchError); // すべてのエラーをキャッチ
+
+const port = process.env.PORT || 8080;
 try {
   app.listen(port, () => {
+    // TODO: ロガーのログ使う
     console.log(`Running at Port ${port}...`);
   });
 } catch (e) {
   if (e instanceof Error) {
+    // TODO: ロガーのログ使う
     console.error(e.message);
   }
 }
