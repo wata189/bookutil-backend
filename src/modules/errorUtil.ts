@@ -1,5 +1,6 @@
 import {Request, Response, NextFunction} from 'express';
 import {STATUS_CODES, sendJson} from './util';
+import { systemLogger } from './logUtil';
 
 // error投げる処理
 export const throwError = (res: Response, msg?: string, statusCode?: number): void => {
@@ -17,7 +18,7 @@ export const catchNotFound = (req: Request, res: Response): void => {
 };
 // app.jsの最後に設定してすべてのエラーをキャッチする
 export const catchError = (err: Error, req: Request, res: Response, next: NextFunction): void => {
-  // TODO:ロガー systemLogger.error(err);
+  systemLogger.error(err);
   if (!res.statusCode) res.status(STATUS_CODES.INTERNAL_SERVER_ERROR);
 
   sendJson(res, err.message, {err});

@@ -1,4 +1,5 @@
 import {Response} from 'express';
+import { systemLogger } from './logUtil';
 
 //ステータスコード定数
 export const STATUS_CODES = {
@@ -30,11 +31,6 @@ export const STATUS_CODES = {
   INTERNAL_SERVER_ERROR: 500,
 };
 
-// レンダリング処理、json処理の共通化
-const logResult = (status: number, msg: string): void => {
-  // TODO: ロガー
-  // systemLogger.log(`${status} ${msg}`);
-};
 export const sendJson = (res: Response, msg?: string, data?: Object): void => {
   // 引数なかった場合の処理
   if (!res.statusCode) res.status(STATUS_CODES.OK);
@@ -44,5 +40,5 @@ export const sendJson = (res: Response, msg?: string, data?: Object): void => {
   const result = {status: res.statusCode, msg, data};
   res.json(result);
 
-  logResult(res.statusCode, msg);
+  systemLogger.info(`${res.statusCode} ${msg}`);
 };
