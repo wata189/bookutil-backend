@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn src/app.ts",
+    "dev": "npx env-cmd -f .env.dev ts-node-dev --respawn src/app.ts",
     "clean": "rimraf dist",
     "tsc": "tsc",
     "build": "npm-run-all clean tsc"
@@ -15,10 +15,16 @@
     "@types/express": "^4.17.17",
     "@types/node": "^20.4.9",
     "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "env-cmd": "^10.1.0",
     "express": "^4.18.2",
+    "helmet": "^7.0.0",
     "log4js": "^6.9.1",
     "npm-run-all": "^4.1.5",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.1.6"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13"
   }
 }

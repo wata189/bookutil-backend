@@ -37,7 +37,7 @@ export const sendJson = (res: Response, msg?: string, data?: Object): void => {
   if (!msg) msg = '';
   if (!data) data = {};
 
-  const result = {status: res.statusCode, msg, data};
+  const result = {...data, status: res.statusCode, msg};
   res.json(result);
 
   systemLogger.info(`${res.statusCode} ${msg}`);

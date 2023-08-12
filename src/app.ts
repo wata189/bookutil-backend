@@ -1,11 +1,23 @@
 import express, { Application, RequestHandler, Request, Response, NextFunction } from "express";
+import helmet from "helmet";
+import cors from "cors";
 
 import { systemLogger, connectAccessLogger } from "./modules/logUtil";
-import {catchError, catchNotFound} from './modules/errorUtil';
+import * as errorUtil from './modules/errorUtil';
 
 const app: Application = express();
 
+// helmetでCSPなどの設定
+app.use(helmet());
 //TODO:corsの設定
+const corsOptions = {
+  origin: process.env.CLIENT_URL || "",
+  allowedHeaders: "*",
+  methods: "*",
+  credentials: true
+};
+app.use(cors(corsOptions));
+
 
 //body-parserの設定
 const bodyParser = require('body-parser');
@@ -19,8 +31,8 @@ app.use(connectAccessLogger);
 const router = require("./controller.ts");
 app.use("/", router);
 
-app.use(catchNotFound); // いずれのルーティングにもマッチしない(=NOT FOUND)をキャッチ
-app.use(catchError); // すべてのエラーをキャッチ
+app.use(errorUtil.catchNotFound); // いずれのルーティングにもマッチしない(=NOT FOUND)をキャッチ
+app.use(errorUtil.catchError); // すべてのエラーをキャッチ
 
 const port = process.env.PORT || 8080;
 try {
