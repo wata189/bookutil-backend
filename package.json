@@ -7,7 +7,10 @@
     "dev": "npx env-cmd -f .env.dev ts-node-dev --respawn src/app.ts",
     "clean": "rimraf dist",
     "tsc": "tsc",
-    "build": "npm-run-all clean tsc"
+    "build": "npm-run-all clean tsc",
+    "-----------": "",
+    "devFirestore": "firebase emulators:start --import=emulator_data --export-on-exit",
+    "----------": ""
   },
   "author": "",
   "license": "ISC",
@@ -18,6 +21,7 @@
     "cors": "^2.8.5",
     "env-cmd": "^10.1.0",
     "express": "^4.18.2",
+    "firebase": "^10.1.0",
     "helmet": "^7.0.0",
     "log4js": "^6.9.1",
     "npm-run-all": "^4.1.5",
@@ -25,6 +29,7 @@
     "typescript": "^5.1.6"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.13"
+    "@types/cors": "^2.8.13",
+    "firebase-tools": "^12.4.7"
   }
 }
