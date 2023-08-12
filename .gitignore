@@ -131,3 +131,8 @@ dist
 
 .http
 _old
+.env.dev
+
+# firebase local
+emulator_data
+.firebaserc
