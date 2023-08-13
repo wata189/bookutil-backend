@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator, Firestore, runTransaction, Transaction, doc, query, orderBy, collection, QueryCompositeFilterConstraint, getDocs, QuerySnapshot, DocumentData } from 'firebase/firestore/lite';
+import { getFirestore, connectFirestoreEmulator, Firestore, runTransaction, Transaction, doc, query, orderBy, collection, QueryCompositeFilterConstraint, getDocs, QuerySnapshot, DocumentData, FirestoreDataConverter } from 'firebase/firestore/lite';
 import * as util from "./util";
 
 
@@ -8,32 +8,27 @@ export class FirestoreTransaction{
   transaction!: Transaction;
 
   constructor(){
-    if(util.isEnv()){
-      // 開発環境の場合はローカル接続
-      const firebaseConfig = {
-        apiKey: process.env.FIRESTORE_API_KEY,
-        appId: process.env.FIRESTORE_API_ID,
-        authDomain: process.env.FIRESTORE_AUTH_DOMAIN,
-        projectId: process.env.FIRESTORE_PROJECT_ID
-      };
-      const app = initializeApp(firebaseConfig);
-      const db:Firestore = getFirestore(app);
-      const firestoreEmulatorHost = process.env.FIRESTORE_EMULATOR_HOST || "";
+    const firebaseConfig = {
+      apiKey: process.env.FIREBASE_API_KEY,
+      appId: process.env.FIREBASE_APP_ID,
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID
+    };
+    const app = initializeApp(firebaseConfig);
+    const db:Firestore = getFirestore(app);
+
+    const host = (db.toJSON() as { settings?: { host?: string } }).settings?.host ?? '';
+
+    // 開発環境の場合はローカル接続
+    const firestoreEmulatorHost = process.env.FIRESTORE_EMULATOR_HOST || "";
+    if(util.isEnv() && !host.startsWith(firestoreEmulatorHost)){
       const firestoreEmulatorPort = process.env.FIRESTORE_EMULATOR_PORT || "9000";
       connectFirestoreEmulator(db, firestoreEmulatorHost, Number(firestoreEmulatorPort));
-      this.db = db;
-    }else{
-      // firebase, db初期化
-      const firebaseConfig = {
-        apiKey: process.env.FIRESTORE_API_KEY,
-        appId: process.env.FIRESTORE_API_ID,
-        authDomain: process.env.FIRESTORE_AUTH_DOMAIN,
-        projectId: process.env.FIRESTORE_PROJECT_ID
-      };
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      this.db = db;
     }
+
+    this.db = db;
   }
 
   getCollectionRef(collectionPath:string){
@@ -43,25 +38,20 @@ export class FirestoreTransaction{
     return doc(this.db, collectionPath, documentId);
   }
 
-  async getCollection(collectionPath:string, where?:QueryCompositeFilterConstraint, orderByField?: string){
+  async getCollection(collectionPath: string,  orderByField?: string, where?: QueryCompositeFilterConstraint){
     const ref = this.getCollectionRef(collectionPath);
     let querySnapshot:QuerySnapshot<DocumentData, DocumentData>|null = null;
     if(where && orderByField){
       const q = query(ref, where, orderBy(orderByField));
       querySnapshot = await getDocs(q);
-    }else if(where){
-      const q = query(ref, where);
+    }else if(orderByField){
+      const q = query(ref, orderBy(orderByField));
       querySnapshot = await getDocs(q);
     }else{
       querySnapshot = await getDocs(ref);
     }
 
-    const ret:DocumentData[] = [];
-    if(querySnapshot){
-      querySnapshot.forEach((doc) => {
-        ret.push(doc.data());
-      })
-    }
+    const ret:DocumentData[] = querySnapshot.docs.map((doc) => doc.data());
     return ret;
   }
 

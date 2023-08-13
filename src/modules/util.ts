@@ -31,6 +31,10 @@ export const STATUS_CODES = {
   INTERNAL_SERVER_ERROR: 500,
 };
 
+export const isEnv = ():boolean => {
+  return process.env.ENV === "dev";
+};
+
 export const sendJson = (res: Response, msg?: string, data?: Object): void => {
   // 引数なかった場合の処理
   if (!res.statusCode) res.status(STATUS_CODES.OK);

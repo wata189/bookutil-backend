@@ -1,7 +1,9 @@
 import express, { RequestHandler, Request, Response, NextFunction } from "express";
+import * as models from "./modules/models";
 import * as util from "./modules/util";
 import * as errorUtil from "./modules/errorUtil";
 import * as authUtil from "./modules/authUtil";
+import * as firestoreUtil from "./modules/firestoreUtil";
 
 // ルーティングする
 const router = express.Router();
@@ -24,8 +26,12 @@ router.get('/libraries/fetch', wrapAsyncMiddleware(async (req, res) => {
   //ログイン済みでなければログインエラー
   if(!isAuth) errorUtil.throwError(res, "ログインをしてください", util.STATUS_CODES.UNAUTHORIZED)
 
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    const libraries = await models.fetchLibraries(fs)
+    return {libraries};
+  }]);
   res.status(util.STATUS_CODES.OK)
-  util.sendJson(res, 'OK', {libraries: []});
+  util.sendJson(res, 'OK', data);
 }));
 
 //routerをモジュールとして扱う準備

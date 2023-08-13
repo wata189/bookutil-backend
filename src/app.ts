@@ -7,9 +7,9 @@ import * as errorUtil from './modules/errorUtil';
 
 const app: Application = express();
 
-// helmetでCSPなどの設定
+//helmetでCSPなどの設定
 app.use(helmet());
-//TODO:corsの設定
+//corsの設定
 const corsOptions = {
   origin: process.env.CLIENT_URL || "",
   allowedHeaders: "*",
