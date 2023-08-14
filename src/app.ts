@@ -1,23 +1,46 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application, RequestHandler, Request, Response, NextFunction } from "express";
+import helmet from "helmet";
+import cors from "cors";
+
+import { systemLogger, connectAccessLogger } from "./modules/logUtil";
+import * as errorUtil from './modules/errorUtil';
 
 const app: Application = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+//helmetでCSPなどの設定
+app.use(helmet());
+//corsの設定
+const corsOptions = {
+  origin: process.env.CLIENT_URL || "",
+  allowedHeaders: "*",
+  methods: "*",
+  credentials: true
+};
+app.use(cors(corsOptions));
 
-app.get("/", async (req: Request, res: Response) => {
-  return res.status(200).send({
-    message: "Hello World!",
-  });
-});
 
-const port = process.env.PORT || 8000;
+//body-parserの設定
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
+
+// accessログ
+app.use(connectAccessLogger);
+
+// ルーティング
+const router = require("./controller.ts");
+app.use("/", router);
+
+app.use(errorUtil.catchNotFound); // いずれのルーティングにもマッチしない(=NOT FOUND)をキャッチ
+app.use(errorUtil.catchError); // すべてのエラーをキャッチ
+
+const port = process.env.PORT || 8080;
 try {
   app.listen(port, () => {
-    console.log(`Running at Port ${port}...`);
+    systemLogger.info(`Running at Port ${port}...`);
   });
 } catch (e) {
   if (e instanceof Error) {
-    console.error(e.message);
+    systemLogger.error(e);
   }
 }
