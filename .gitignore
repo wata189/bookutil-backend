@@ -132,6 +132,7 @@ dist
 .http
 _old
 .env.dev
+src/batch/dbdata
 
 # firebase local
 emulator_data
