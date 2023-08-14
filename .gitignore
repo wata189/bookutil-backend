@@ -133,6 +133,7 @@ dist
 _old
 .env.dev
 src/batch/dbdata
+Dockerfile
 
 # firebase local
 emulator_data
