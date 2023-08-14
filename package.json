@@ -8,6 +8,12 @@
     "clean": "rimraf dist",
     "tsc": "tsc",
     "build": "npm-run-all clean tsc",
+    "------------": "",
+    "createDockerImage": "docker build --file=Dockerfile -t bookutilapi .",
+    "runLocalDocker": "npm run createDockerImage && docker container run --rm -p 8080:8080 --init --name bookutilapi bookutilapi",
+    "setTagToDockerImage": "docker tag bookutilapi asia.gcr.io/bookutil/bookutilapi:v1 && docker tag bookutilapi asia.gcr.io/bookutil/bookutilapi:latest",
+    "pushDockerImage": "docker push asia.gcr.io/bookutil/bookutilapi:v1 && docker push asia.gcr.io/bookutil/bookutilapi:latest",
+    "deployCloudRun": "gcloud run deploy bookutilapi --image asia.gcr.io/bookutil/bookutilapi:v1 --platform managed",
     "-----------": "",
     "devFirestore": "firebase emulators:start --import=emulator_data --export-on-exit",
     "----------": ""
@@ -17,6 +23,7 @@
   "dependencies": {
     "@types/express": "^4.17.17",
     "@types/node": "^20.4.9",
+    "@types/cors": "^2.8.13",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "env-cmd": "^10.1.0",
@@ -29,7 +36,6 @@
     "typescript": "^5.1.6"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.13",
     "firebase-tools": "^12.4.7"
   }
 }

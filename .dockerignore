@@ -132,10 +132,11 @@ dist
 .http
 _old
 .env.dev
-.env.prod
-Dockerfile
-src/batch/dbdata
+src/batch
 
 # firebase local
 emulator_data
 .firebaserc
+firebase.json
+firestore.indexes.json
+firestore.rules

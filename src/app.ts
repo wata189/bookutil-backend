@@ -28,7 +28,7 @@ app.use(bodyParser.json());
 app.use(connectAccessLogger);
 
 // ルーティング
-const router = require("./controller.ts");
+const router = require("./controller");
 app.use("/", router);
 
 app.use(errorUtil.catchNotFound); // いずれのルーティングにもマッチしない(=NOT FOUND)をキャッチ
