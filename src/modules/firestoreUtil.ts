@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator, Firestore, runTransaction, Transaction, doc, query, orderBy, collection, QueryCompositeFilterConstraint, getDocs, QuerySnapshot, DocumentData, FirestoreDataConverter } from 'firebase/firestore/lite';
+import { getFirestore, connectFirestoreEmulator, Firestore, runTransaction, Transaction, doc, query, orderBy, collection, QueryFieldFilterConstraint, getDocs, QuerySnapshot, DocumentData, where, WhereFilterOp } from 'firebase/firestore/lite';
 import * as util from "./util";
 
 
@@ -31,14 +31,14 @@ export class FirestoreTransaction{
     this.db = db;
   }
 
-  getCollectionRef(collectionPath:string){
+  private getCollectionRef(collectionPath:string){
     return collection(this.db, collectionPath);
   }
-  getDocumentRef(collectionPath:string, documentId:string){
+  private getDocumentRef(collectionPath:string, documentId:string){
     return doc(this.db, collectionPath, documentId);
   }
 
-  async getCollection(collectionPath: string,  orderByField?: string, where?: QueryCompositeFilterConstraint){
+  async getCollection(collectionPath: string,  orderByField?: string, where?: QueryFieldFilterConstraint){
     const ref = this.getCollectionRef(collectionPath);
     let querySnapshot:QuerySnapshot<DocumentData, DocumentData>|null = null;
     if(where && orderByField){
@@ -51,12 +51,20 @@ export class FirestoreTransaction{
       querySnapshot = await getDocs(ref);
     }
 
-    const ret:DocumentData[] = querySnapshot.docs.map((doc) => doc.data());
+    const ret:DocumentData[] = querySnapshot.docs.map((doc) => {
+      const docData = doc.data();
+      docData.documentId = doc.id;
+      return docData;
+    });
     return ret;
   }
 
   //TODO:ほかのメソッド
 }
+
+export const createWhere = (fieldPath:string, opStr:WhereFilterOp, value: unknown) => {
+  return where(fieldPath, opStr, value)
+};
 
 export const tran = async (funcs:Function[]) => {
   const fs = new FirestoreTransaction();

@@ -19,9 +19,10 @@ export const wrapAsyncMiddleware = (
     fn(req, res, next).catch(next);
 };
 
-// ルーティング
+//////////// ルーティング
+//図書館リスト取得
 router.get('/libraries/fetch', wrapAsyncMiddleware(async (req, res) => {
-  const isAuth = authUtil.isAuth(req.query.accessToken?.toString())
+  const isAuth = await authUtil.isAuth(req.query.accessToken?.toString());
 
   //ログイン済みでなければログインエラー
   if(!isAuth) errorUtil.throwError(res, "ログインをしてください", util.STATUS_CODES.UNAUTHORIZED)
@@ -31,6 +32,17 @@ router.get('/libraries/fetch', wrapAsyncMiddleware(async (req, res) => {
     return {libraries};
   }]);
   res.status(util.STATUS_CODES.OK)
+  util.sendJson(res, 'OK', data);
+}));
+
+//Toread初期処理
+router.get("/toread/init", wrapAsyncMiddleware(async (req, res) => {
+  const isAuth = await authUtil.isAuth(req.query.accessToken?.toString());
+
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    return await models.initToread(isAuth, fs);
+  }]);
+  res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
 }));
 
