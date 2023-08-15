@@ -59,6 +59,15 @@ export class FirestoreTransaction{
     return ret;
   }
 
+  async createDocument(collectionPath:string, document: unknown){
+    const ref = doc(this.getCollectionRef(collectionPath))
+    this.transaction.set(ref, document)
+  }
+  async updateDocument(collectionPath:string, documentId:string, document:{ [x: string]: any; }){
+    const ref = this.getDocumentRef(collectionPath, documentId)
+    this.transaction.update(ref, document);
+  }
+
   //TODO:ほかのメソッド
 }
 

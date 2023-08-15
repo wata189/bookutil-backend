@@ -1,7 +1,7 @@
 import express, { RequestHandler, Request, Response, NextFunction } from "express";
 import * as models from "./modules/models";
 import * as util from "./modules/util";
-import * as errorUtil from "./modules/errorUtil";
+import * as validationUtil from "./modules/validationUtil";
 import * as authUtil from "./modules/authUtil";
 import * as firestoreUtil from "./modules/firestoreUtil";
 
@@ -24,8 +24,8 @@ export const wrapAsyncMiddleware = (
 router.get('/libraries/fetch', wrapAsyncMiddleware(async (req, res) => {
   const isAuth = await authUtil.isAuth(req.query.accessToken?.toString());
 
-  //ログイン済みでなければログインエラー
-  if(!isAuth) errorUtil.throwError(res, "ログインをしてください", util.STATUS_CODES.UNAUTHORIZED)
+  //ログイン済みでも外部連携でもなければログインエラー
+  validationUtil.isAuth(res, isAuth);
 
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
     const libraries = await models.fetchLibraries(fs)
@@ -44,6 +44,30 @@ router.get("/toread/init", wrapAsyncMiddleware(async (req, res) => {
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
+}));
+
+//Toread新規作成
+router.post("/toread/create", wrapAsyncMiddleware(async (req, res) => {
+  const params:models.BookParams = req.body;
+
+  const isAuth = await authUtil.isAuth(params.accessToken);
+  //ログイン済みでも外部連携でもなければログインエラー
+  validationUtil.isAuth(res, isAuth, params.isExternalCooperation);
+  //パラメータチェック
+  validationUtil.isValidBook(res, params);
+
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    //ISBN被りチェック
+    await validationUtil.isCreateUniqueIsbn(res, params.isbn, fs);
+    //DBに格納
+    await models.createToreadBook(params, fs);
+    return;
+  },async (fs:firestoreUtil.FirestoreTransaction) => {
+    return await models.initToread(isAuth, fs);
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
+
 }));
 
 //routerをモジュールとして扱う準備

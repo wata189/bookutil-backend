@@ -35,6 +35,12 @@ export const isEnv = ():boolean => {
   return process.env.ENV === "dev";
 };
 
+export const isIsbn = (isbn:string) => {
+  const regex10 = /^[0-9]{9}[0-9X]$/;
+  const regex13 = /^[0-9]{13}$/;
+  return regex10.test(isbn) || regex13.test(isbn);
+};
+
 export const sendJson = (res: Response, msg?: string, data?: Object): void => {
   // 引数なかった場合の処理
   if (!res.statusCode) res.status(STATUS_CODES.OK);

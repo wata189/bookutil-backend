@@ -1,4 +1,4 @@
-import { DocumentData, FirestoreDataConverter } from "firebase/firestore/lite";
+import { DocumentData, FirestoreDataConverter, Timestamp } from "firebase/firestore/lite";
 import * as firestoreUtil from "./firestoreUtil";
 import { systemLogger } from "./logUtil";
 
@@ -31,10 +31,10 @@ export const fetchLibraries = async (fs:firestoreUtil.FirestoreTransaction) => {
 };
 
 export const initToread = async (isAuth:boolean, fs:firestoreUtil.FirestoreTransaction) => {
-  const toreadRows = await fetchToreadBooks(isAuth, fs);
-  const toreadTags = await fetchToreadTags(isAuth, toreadRows, fs);
+  const toreadBooks = await fetchToreadBooks(isAuth, fs);
+  const toreadTags = await fetchToreadTags(isAuth, toreadBooks, fs);
 
-  return {toreadRows, toreadTags};
+  return {toreadBooks, toreadTags};
 };
 
 type ToreadBook = {
@@ -65,7 +65,7 @@ const fetchToreadBooks = async (isAuth:boolean, fs:firestoreUtil.FirestoreTransa
       publisherName: resultRow.publisher_name,
       page: resultRow.page,
       otherUrl: resultRow.other_url,
-      coverUrl: resultRow.cover_url || "img/cover_placeholder.jpg",
+      coverUrl: resultRow.cover_url,
       newBookCheckFlg: resultRow.new_book_check_flg,
       updateAt: resultRow.update_at.seconds,
       tags: resultRow.tags
@@ -92,4 +92,63 @@ const fetchToreadTags = async (isAuth:boolean, toreadBooks:ToreadBook[], fs:fire
   // set→array変換で重複削除
   // javascriptはsetも順序が保証される
   return [...(new Set(tags))];
+};
+
+export type BookParams = {
+  documentId: string | null
+  updateAt: number | null
+  user: string
+  bookName: string
+  isbn: string | null
+  page: number | null
+  authorName: string | null
+  publisherName: string | null
+  otherUrl: string | null
+  coverUrl: string | null
+  newBookCheckFlg: number
+  tags: string[]
+  accessToken: string
+  isExternalCooperation: boolean
+};
+export const createToreadBook = async (params:BookParams, fs:firestoreUtil.FirestoreTransaction) => {
+  const document = toreadBookParamsToDocument(params);
+  document.create_user = params.user;
+  document.create_at = document.update_at;
+  fs.createDocument(COLLECTION_PATH.T_TOREAD_BOOK, document);
+};
+
+export const updateToreadBook = async (documentId: string, params:BookParams, fs:firestoreUtil.FirestoreTransaction) => {
+  const document = toreadBookParamsToDocument(params);
+  fs.updateDocument(COLLECTION_PATH.T_TOREAD_BOOK, documentId, document);
+};
+
+type BookDocument = {
+  book_name: string
+  isbn: string | null
+  page: number | null
+  author_name: string | null
+  publisher_name: string | null
+  other_url: string | null
+  cover_url: string | null
+  new_book_check_flg: number
+  tags: string[]
+  create_user?: string
+  create_at?: Timestamp 
+  update_user: string
+  update_at: Timestamp 
+}
+const toreadBookParamsToDocument = (params:BookParams):BookDocument => {
+  return {
+    "book_name": params.bookName,
+    "isbn": params.isbn,
+    "page": params.page,
+    "author_name": params.authorName,
+    "publisher_name": params.publisherName,
+    "other_url": params.otherUrl,
+    "cover_url": params.coverUrl,
+    "new_book_check_flg": params.newBookCheckFlg,
+    "tags": params.tags,
+    "update_user": params.user,
+    "update_at": Timestamp.fromDate(new Date())
+  }
 };
