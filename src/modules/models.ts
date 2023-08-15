@@ -144,5 +144,27 @@ const toreadBookParamsToDocument = (params:BookParams):BookDocument => {
     "tags": params.tags,
     "update_user": params.user,
     "update_at": Timestamp.fromDate(new Date())
+  };
+};
+
+export type SimpleBook = {
+  documentId: string
+  updateAt: number
+};
+export type SimpleBooksParams = {
+  books: SimpleBook[]
+  tags?: string[]
+  user: string
+  accessToken: string
+};
+export type BooksParams = {
+  books: SimpleBook[]
+  tags?: string[]
+  user: string
+  accessToken: string
+};
+export const deleteToreadBooks = async (books: SimpleBook[], fs:firestoreUtil.FirestoreTransaction) => {
+  for await (const book of books){
+    await fs.deleteDocument(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, book.documentId);
   }
 };

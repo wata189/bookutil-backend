@@ -76,6 +76,10 @@ export class FirestoreTransaction{
     const ref = this.getDocumentRef(collectionPath, documentId)
     this.transaction.update(ref, document);
   }
+  async deleteDocument(collectionPath:string, documentId:string){
+    const ref = this.getDocumentRef(collectionPath, documentId);
+    this.transaction.delete(ref);
+  }
 
   //TODO:ほかのメソッド
 }

@@ -99,5 +99,31 @@ router.post("/toread/update", wrapAsyncMiddleware(async (req, res) => {
   util.sendJson(res, 'OK', data);
 }));
 
+//Toread削除
+router.post("/toread/delete", wrapAsyncMiddleware(async (req, res) => {
+  const params:models.SimpleBooksParams = req.body;
+
+  const isAuth = await authUtil.isAuth(params.accessToken);
+  //ログイン済みでなければログインエラー
+  validationUtil.isAuth(res, isAuth);
+  //パラメータチェック
+  validationUtil.isValidBooks(res, params);
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    //ID存在チェック
+    await validationUtil.isExistBooksId(res, params.books, fs);
+    //コンフリクトチェック
+    await validationUtil.isNotConflictBooks(res, params.books, fs);
+
+    //DBで削除
+    await models.deleteToreadBooks(params.books, fs);
+
+    return;
+  }, async (fs:firestoreUtil.FirestoreTransaction) => {
+    return await models.initToread(isAuth, fs);
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
+}))
+
 //routerをモジュールとして扱う準備
 module.exports = router;

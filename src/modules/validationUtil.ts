@@ -137,3 +137,40 @@ export const isNotConflictBook = async (res:Response, documentId:string, updateA
     errorUtil.throwError(res, "本の情報が更新されています", util.STATUS_CODES.CONFLICT);
   }
 };
+
+//複数選択の本のバリデーション
+export const isValidBooks = async (res:Response, params:models.BooksParams) => {
+  
+  try{
+    const validationCmds:ValidationCmd[] = [
+      {param: params.books, func: isExist},
+      {param: params.books, func: isExistArray},
+      {param: params.user, func: isExist}
+    ];
+
+    for(const deleteBook of params.books){
+      validationCmds.push({param:deleteBook.documentId, func:isExist});
+      validationCmds.push({param:deleteBook.updateAt, func:isExist});
+      validationCmds.push({param:deleteBook.updateAt, func:isNumber});
+    }
+
+    runValidationCmds(res, validationCmds);
+  }catch(e){
+    systemLogger.error(e);
+    errorUtil.throwError(res, "不正なパラメータがあります", util.STATUS_CODES.BAD_REQUEST);
+  }
+};
+
+//ID存在チェック　複数
+export const isExistBooksId = async (res:Response, books:models.SimpleBook[], fs:firestoreUtil.FirestoreTransaction) => {
+  for await (const book of books){
+    await isExistBookId(res, book.documentId, fs);
+  }
+};
+
+//コンフリクトチェック　複数
+export const isNotConflictBooks = async (res:Response, books:models.SimpleBook[], fs:firestoreUtil.FirestoreTransaction) => {
+  for await (const book of books){
+    await isNotConflictBook(res, book.documentId, book.updateAt, fs);
+  }
+};
