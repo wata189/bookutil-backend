@@ -67,7 +67,36 @@ router.post("/toread/create", wrapAsyncMiddleware(async (req, res) => {
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
+}));
 
+//Toread更新
+router.post("/toread/update", wrapAsyncMiddleware(async (req, res) => {
+  const params:models.BookParams = req.body;
+  const documentId = params.documentId || "";
+
+  const isAuth = await authUtil.isAuth(params.accessToken);
+  //ログイン済みでなければログインエラー
+  validationUtil.isAuth(res, isAuth);
+  //パラメータチェック
+  validationUtil.isValidBook(res, params);
+  //form情報以外のパラメータチェック
+  validationUtil.isValidUpdateBook(res, params);
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    //ID存在チェック
+    await validationUtil.isExistBookId(res, documentId, fs);
+    //ISBN被りチェック
+    await validationUtil.isUpdateUniqueIsbn(res, documentId, params.isbn, fs);
+    //コンフリクトチェック
+    await validationUtil.isNotConflictBook(res, documentId, params.updateAt, fs);
+
+    //DB更新
+    await models.updateToreadBook(documentId, params, fs);
+    return;
+  }, async (fs:firestoreUtil.FirestoreTransaction) => {
+    return await models.initToread(isAuth, fs);
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
 }));
 
 //routerをモジュールとして扱う準備

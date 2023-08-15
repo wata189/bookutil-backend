@@ -1,6 +1,7 @@
 import {Response} from 'express';
 
 import * as util from "./util";
+import * as models from "./models";
 import * as errorUtil from "./errorUtil";
 import * as firestoreUtil from "./firestoreUtil";
 import { systemLogger } from './logUtil';
@@ -64,17 +65,37 @@ export const isValidBook = (res:Response, params:any) => {
       validationCmds.push({param:params.coverUrl, func: isUrl});
     }
 
-    for(const cmd of validationCmds){
-      const isValid = cmd.func(cmd.param);
-      // エラーあったらその時点で終了
-      if(!isValid){
-        errorUtil.throwError(res, `不正なパラメータがあります`, util.STATUS_CODES.BAD_REQUEST);
-      }
-    }
-
+    runValidationCmds(res, validationCmds);
   }catch(e){
     systemLogger.error(e);
-    errorUtil.throwError(res, `不正なパラメータがあります`, util.STATUS_CODES.BAD_REQUEST);
+    errorUtil.throwError(res, "不正なパラメータがあります", util.STATUS_CODES.BAD_REQUEST);
+  }
+};
+
+export const isValidUpdateBook = (res:Response, params:models.BookParams) => {
+
+  try{
+    const validationCmds:ValidationCmd[] = [
+      {param: params.documentId, func: isExist},
+      {param: params.updateAt, func: isExist},
+      {param: params.updateAt, func: isNumber}
+    ];
+
+    runValidationCmds(res, validationCmds);
+  }catch(e){
+    systemLogger.error(e);
+    errorUtil.throwError(res, "不正なパラメータがあります", util.STATUS_CODES.BAD_REQUEST);
+  }
+
+};
+
+const runValidationCmds = (res:Response, cmds:ValidationCmd[]) => {
+  for(const cmd of cmds){
+    const isValid = cmd.func(cmd.param);
+    // エラーあったらその時点で終了
+    if(!isValid){
+      errorUtil.throwError(res, "不正なパラメータがあります", util.STATUS_CODES.BAD_REQUEST);
+    }
   }
 };
 
@@ -83,8 +104,36 @@ export const isCreateUniqueIsbn = async (res:Response, isbn:string|null, fs:fire
   // isbn空の場合は問題なし
   if(!isExist(isbn)) return;
 
-  const result = await fs.getCollection("t_toread_book", "isbn", firestoreUtil.createWhere("isbn", "==", isbn));
+  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "isbn", firestoreUtil.createWhere("isbn", "==", isbn));
   if(result.length > 0){
-    errorUtil.throwError(res, `同じISBNの本があります`, util.STATUS_CODES.BAD_REQUEST);
+    errorUtil.throwError(res, "同じISBNの本があります", util.STATUS_CODES.BAD_REQUEST);
+  }
+};
+
+//ISBN被りチェック　更新
+export const isUpdateUniqueIsbn = async (res:Response, documentId:string, isbn:string|null, fs:firestoreUtil.FirestoreTransaction) => {
+  //isbn空の場合は問題ない
+  if(!isExist(isbn)) return;
+  
+  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "isbn", firestoreUtil.createWhere("isbn", "==", isbn));
+  const sameIsbnBook = result.find(resultRow => resultRow.documentId !== documentId);
+  if(sameIsbnBook){
+    errorUtil.throwError(res, "同じISBNの本があります", util.STATUS_CODES.BAD_REQUEST);
+  }
+};
+
+//ID存在チェック
+export const isExistBookId = async (res:Response, documentId:string, fs:firestoreUtil.FirestoreTransaction) => {
+  const book = await util.getToreadBook(documentId, fs);
+  if(!isExist(book)){
+    errorUtil.throwError(res, "本が削除されています", util.STATUS_CODES.BAD_REQUEST);
+  }
+};
+
+//コンフリクトチェック
+export const isNotConflictBook = async (res:Response, documentId:string, updateAt:number|null, fs:firestoreUtil.FirestoreTransaction) => {
+  const book = await util.getToreadBook(documentId, fs);
+  if(!book || book.update_at.seconds !== updateAt ){
+    errorUtil.throwError(res, "本の情報が更新されています", util.STATUS_CODES.CONFLICT);
   }
 };

@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator, Firestore, runTransaction, Transaction, doc, query, orderBy, collection, QueryFieldFilterConstraint, getDocs, QuerySnapshot, DocumentData, where, WhereFilterOp } from 'firebase/firestore/lite';
+import { getFirestore, connectFirestoreEmulator, Firestore, runTransaction, Transaction, doc, query, orderBy, collection, QueryFieldFilterConstraint, getDoc, getDocs, QuerySnapshot, DocumentData, where, WhereFilterOp } from 'firebase/firestore/lite';
 import * as util from "./util";
 
 
@@ -58,6 +58,15 @@ export class FirestoreTransaction{
     });
     return ret;
   }
+  async getDocument(collectionPath:string, documentId:string){
+    const ref = this.getDocumentRef(collectionPath, documentId);
+    const doc = await getDoc(ref);
+    const docData = doc.data();
+    if(docData){
+      docData.documentId = doc.id;
+    }
+    return docData
+  }
 
   async createDocument(collectionPath:string, document: unknown){
     const ref = doc(this.getCollectionRef(collectionPath))
@@ -88,4 +97,10 @@ export const tran = async (funcs:Function[]) => {
   }
   // funcsに渡した関数群の最後の返り値を返却
   return result;
+};
+
+export const COLLECTION_PATH = {
+  M_LIBRARY: "/m_library",
+  M_TOREAD_TAG: "/m_toread_tag",
+  T_TOREAD_BOOK: "/t_toread_book"
 };
