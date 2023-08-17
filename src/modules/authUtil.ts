@@ -17,7 +17,7 @@ const verifier = CognitoJwtVerifier.create({
   clientId: COGNITO_CRIENT_ID
 });
 
-// TODO: トークンが使えるか確認する処理
+// トークンが使えるか確認する処理
 export const isAuth = async (accessToken:string|undefined):Promise<boolean> => {
   // 開発環境の場合は環境変数を見る
   if(util.isEnv() && !USE_AUTH){

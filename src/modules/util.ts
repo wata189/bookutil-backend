@@ -42,8 +42,8 @@ export const isIsbn = (isbn:string) => {
   return regex10.test(isbn) || regex13.test(isbn);
 };
 
-export const getToreadBook = (documentId:string, fs:firestoreUtil.FirestoreTransaction) => {
-  return fs.getDocument(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, documentId);
+export const getToreadBook = async (documentId:string, fs:firestoreUtil.FirestoreTransaction) => {
+  return await fs.getDocument(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, documentId);
 };
 
 export const sendJson = (res: Response, msg?: string, data?: Object): void => {
