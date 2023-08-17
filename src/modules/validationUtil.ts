@@ -13,29 +13,29 @@ export const isAuth = (res:Response, isAuth:boolean, isExternalCooperation?:bool
 };
 
 const NOT_EXISTS:unknown[] = ["", null, undefined, NaN];
-const isExist = (val:unknown) => {
+export const isExist = (val:unknown) => {
   return !NOT_EXISTS.includes(val);
 };
-const isExistArray = (val:any[]) => {
+export const isExistArray = (val:any[]) => {
   return val.length > 0;
 };
-const isFlg = (val:any) => {
+export const isFlg = (val:any) => {
   return val === 1 || val === 0;
 };
-const isNumber = (val:number) => {
+export const isNumber = (val:any) => {
   const regex1 = /^-?[0-9]$/;
   const regex10 = /^-?[0-9]*\.?[0-9]+$/;
 
   return regex10.test(val.toString()) || regex1.test(val.toString());
 };
-const isPlus = (val:number) => {
+export const isPlus = (val:number) => {
   return val > 0;
 };
-const isIsbn = (val:string) => {
+export const isIsbn = (val:string) => {
   return util.isIsbn(val);
 };
-const isUrl = (val:string) => {
-  const regex = /^https?:/;
+export const isUrl = (val:string) => {
+  const regex = /^https?:\/\//;
   return regex.test(val);
 };
 
