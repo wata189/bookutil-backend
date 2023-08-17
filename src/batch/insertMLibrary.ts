@@ -1,12 +1,13 @@
 
 import * as firestoreUtil from "../modules/firestoreUtil";
+import * as models from "../modules/models";
 import mLibraries from './dbdata/bookutil.m_library.json';
 import mLibraryBusinessHours from './dbdata/bookutil.m_library_business_hours.json';
 
 console.log("start insertMLibrary")
 
 const at = (new Date());
-const insertData = mLibraries.map((library:any) => {
+const documents:models.BookDocument[] = mLibraries.map((library:any) => {
   const businessHours = mLibraryBusinessHours.filter((hour:any)=> {return library.id === hour.library_id})
     .map((hour:any)=>{
       return {
@@ -16,7 +17,6 @@ const insertData = mLibraries.map((library:any) => {
         end_time: hour.end_time
       }
     });
-  console.log(businessHours)
   return {
     id: library.id,
     city: library.city,
@@ -33,7 +33,9 @@ const insertData = mLibraries.map((library:any) => {
     business_hours: businessHours
   }
 });
-firestoreUtil.tran([
-  //TODO:insert
-]);
+firestoreUtil.tran([ async (fs:firestoreUtil.FirestoreTransaction) => {
+  for await (const doc of documents){
+    await fs.createDocument(firestoreUtil.COLLECTION_PATH.M_LIBRARY, doc)
+  }
+}]);
 console.log("end insertMLibrary")

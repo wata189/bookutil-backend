@@ -116,7 +116,7 @@ export const updateToreadBook = async (documentId: string, params:BookParams, fs
   await fs.updateDocument(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, documentId, document);
 };
 
-type BookDocument = {
+export type BookDocument = {
   book_name: string
   isbn: string | null
   page: number | null
