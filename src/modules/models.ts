@@ -168,3 +168,11 @@ export const deleteToreadBooks = async (books: SimpleBook[], fs:firestoreUtil.Fi
     await fs.deleteDocument(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, book.documentId);
   }
 };
+
+export const addToreadTag = async (params:SimpleBooksParams, fs:firestoreUtil.FirestoreTransaction) => {
+  if(params.tags){
+    for await (const book of params.books){
+      fs.addArray(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, book.documentId, "tags", params.tags)
+    }
+  }
+};

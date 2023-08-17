@@ -123,7 +123,35 @@ router.post("/toread/delete", wrapAsyncMiddleware(async (req, res) => {
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
-}))
+}));
+
+//Toreadタグ追加
+router.post("/toread/tag/add", wrapAsyncMiddleware(async (req, res) => {
+  const params:models.SimpleBooksParams = req.body;
+
+  const isAuth = await authUtil.isAuth(params.accessToken);
+  //ログイン済みでなければログインエラー
+  validationUtil.isAuth(res, isAuth);
+  //パラメータチェック
+  validationUtil.isValidBooks(res, params);
+  //タグのパラメータチェック
+  validationUtil.isValidTag(res, params);
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    //ID存在チェック
+    await validationUtil.isExistBooksId(res, params.books, fs);
+    //コンフリクトチェック
+    await validationUtil.isNotConflictBooks(res, params.books, fs);
+
+    //DBに格納
+    await models.addToreadTag(params, fs);
+
+    return;
+  }, async (fs:firestoreUtil.FirestoreTransaction) => {
+    return await models.initToread(isAuth, fs);
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
+}));
 
 //routerをモジュールとして扱う準備
 module.exports = router;

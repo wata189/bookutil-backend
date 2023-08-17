@@ -139,7 +139,7 @@ export const isNotConflictBook = async (res:Response, documentId:string, updateA
 };
 
 //複数選択の本のバリデーション
-export const isValidBooks = async (res:Response, params:models.BooksParams) => {
+export const isValidBooks = (res:Response, params:models.BooksParams) => {
   
   try{
     const validationCmds:ValidationCmd[] = [
@@ -153,6 +153,21 @@ export const isValidBooks = async (res:Response, params:models.BooksParams) => {
       validationCmds.push({param:deleteBook.updateAt, func:isExist});
       validationCmds.push({param:deleteBook.updateAt, func:isNumber});
     }
+
+    runValidationCmds(res, validationCmds);
+  }catch(e){
+    systemLogger.error(e);
+    errorUtil.throwError(res, "不正なパラメータがあります", util.STATUS_CODES.BAD_REQUEST);
+  }
+};
+
+//タグ追加のバリデーション
+export const isValidTag = (res:Response, params:models.BooksParams) => {
+  try{
+    const validationCmds:ValidationCmd[] = [
+      {param: params.tags, func: isExist},
+      {param: params.tags, func: isExistArray}
+    ];
 
     runValidationCmds(res, validationCmds);
   }catch(e){

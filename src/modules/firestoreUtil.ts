@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator, Firestore, runTransaction, Transaction, doc, query, orderBy, collection, QueryFieldFilterConstraint, getDoc, getDocs, QuerySnapshot, DocumentData, where, WhereFilterOp } from 'firebase/firestore/lite';
+import { getFirestore, connectFirestoreEmulator, Firestore, runTransaction, Transaction, doc, query, orderBy, collection, QueryFieldFilterConstraint, getDoc, getDocs, QuerySnapshot, DocumentData, where, WhereFilterOp, arrayUnion } from 'firebase/firestore/lite';
 import * as util from "./util";
 
 
@@ -80,8 +80,12 @@ export class FirestoreTransaction{
     const ref = this.getDocumentRef(collectionPath, documentId);
     this.transaction.delete(ref);
   }
-
-  //TODO:ほかのメソッド
+  async addArray(collectionPath:string, documentId:string, field:string, values:unknown[]){
+    const document = {
+      [field]: arrayUnion(...values)
+    };
+    this.updateDocument(collectionPath, documentId, document)
+  }
 }
 
 export const createWhere = (fieldPath:string, opStr:WhereFilterOp, value: unknown) => {
