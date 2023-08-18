@@ -131,7 +131,8 @@ dist
 
 .http
 _old
-.env.dev
+.env
+.env*
 src/batch/dbdata
 Dockerfile
 
