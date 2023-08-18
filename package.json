@@ -9,7 +9,7 @@
     "-----------": "",
     "devFirestore": "firebase emulators:start --import=emulator_data --export-on-exit",
     "----------": "",
-    "devBatch": "npm run build && xcopy src\\batch\\dbdata\\ dist\\batch\\dbdata\\ /s /y /h && npx env-cmd -f .env.dev node dist/batch/insertMToreadTag.js",
+    "devBatch": "npm run build && xcopy src\\batch\\dbdata\\ dist\\batch\\dbdata\\ /s /y /h && npx env-cmd -f .env.dev node dist/batch/insertTToreadBook.js",
     "------------": "",
     "test": "npx env-cmd -f .env.dev npx jest",
     "clean": "rimraf dist",

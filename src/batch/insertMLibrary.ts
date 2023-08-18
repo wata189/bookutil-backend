@@ -7,7 +7,7 @@ import mLibraryBusinessHours from './dbdata/bookutil.m_library_business_hours.js
 console.log("start insertMLibrary")
 
 const at = (new Date());
-const documents:models.BookDocument[] = mLibraries.map((library:any) => {
+const documents = mLibraries.map((library:any) => {
   const businessHours = mLibraryBusinessHours.filter((hour:any)=> {return library.id === hour.library_id})
     .map((hour:any)=>{
       return {
