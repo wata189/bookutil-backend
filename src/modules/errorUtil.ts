@@ -19,7 +19,7 @@ export const catchNotFound = (req: Request, res: Response): void => {
 // app.jsの最後に設定してすべてのエラーをキャッチする
 export const catchError = (err: Error, req: Request, res: Response, next: NextFunction): void => {
   systemLogger.error(err);
-  if (!res.statusCode) res.status(util.STATUS_CODES.INTERNAL_SERVER_ERROR);
+  if (!res.statusCode || res.statusCode < util.STATUS_CODES.BAD_REQUEST) res.status(util.STATUS_CODES.INTERNAL_SERVER_ERROR);
 
   util.sendJson(res, err.message, {err});
 };

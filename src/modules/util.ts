@@ -1,4 +1,5 @@
 import {Response} from 'express';
+import * as firestoreUtil from './firestoreUtil';
 import { systemLogger } from './logUtil';
 
 //ステータスコード定数
@@ -33,6 +34,16 @@ export const STATUS_CODES = {
 
 export const isEnv = ():boolean => {
   return process.env.ENV === "dev";
+};
+
+export const isIsbn = (isbn:string) => {
+  const regex10 = /^[0-9]{9}[0-9X]$/;
+  const regex13 = /^[0-9]{13}$/;
+  return regex10.test(isbn) || regex13.test(isbn);
+};
+
+export const getToreadBook = async (documentId:string, fs:firestoreUtil.FirestoreTransaction) => {
+  return await fs.getDocument(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, documentId);
 };
 
 export const sendJson = (res: Response, msg?: string, data?: Object): void => {
