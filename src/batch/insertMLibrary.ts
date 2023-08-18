@@ -23,7 +23,7 @@ const documents = mLibraries.map((library:any) => {
     name: library.name,
     closest_station: library.closest_station,
     url: library.url,
-    map_url: library.url,
+    map_url: library.map_url,
     order_num: library.order_num,
     new_book_check_flg: library.new_book_check_flg,
     create_user: "batch",
