@@ -14,15 +14,15 @@
     "devBatch": "npm run test && npm run build && xcopy src\\batch\\dbdata\\ dist\\batch\\dbdata\\ /s /y /h && npx env-cmd -f .env.dev node dist/batch/insertTToreadBook.js",
     "prodBatch": "npm run test && npm run build && xcopy src\\batch\\dbdata\\ dist\\batch\\dbdata\\ /s /y /h && npx env-cmd -f .env.prod node dist/batch/hoge.js",
     "------↓CloudRunデプロイ------": "",
-    "deploy": "npm-run-all createDockerImage setTagToDockerImage pushDockerImage deployCloudRun",
+    "deployApi": "npm-run-all createDockerImage setTagToDockerImage pushDockerImage deployCloudRun",
     "------↓モジュール------": "",
     "test": "npx env-cmd -f .env.dev npx jest",
     "clean": "rimraf dist",
     "tsc": "tsc",
-    "createDockerImage": "npm run test && docker build --file=Dockerfile -t bookutilapi .",
-    "setTagToDockerImage": "docker tag bookutilapi asia.gcr.io/bookutil/bookutilapi:v1 && docker tag bookutilapi asia.gcr.io/bookutil/bookutilapi:latest",
-    "pushDockerImage": "docker push asia.gcr.io/bookutil/bookutilapi:v1 && docker push asia.gcr.io/bookutil/bookutilapi:latest",
-    "deployCloudRun": "gcloud run deploy bookutilapi --image asia.gcr.io/bookutil/bookutilapi:v1 --platform managed"
+    "createDockerImage": "npm run test && docker build --file=Dockerfile_api -t bookutilapi .",
+    "setTagToDockerImage": "docker tag bookutilapi asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilapi:v1 && docker tag bookutilapi asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilapi:latest",
+    "pushDockerImage": "docker push asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilapi:v1 && docker push asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilapi:latest",
+    "deployCloudRun": "gcloud run deploy bookutilapi --image asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilapi:v1 --platform managed --memory 128M --cpu 1"
 
   },
   "author": "",

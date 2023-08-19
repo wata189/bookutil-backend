@@ -1,5 +1,6 @@
 import { systemLogger } from "./logUtil";
 import * as util from "./util";
+import * as firestoreUtil from "./firestoreUtil";
 
 import { CognitoJwtVerifier } from "aws-jwt-verify";
 
@@ -18,7 +19,7 @@ const verifier = CognitoJwtVerifier.create({
 });
 
 // トークンが使えるか確認する処理
-export const isAuth = async (accessToken:string|undefined):Promise<boolean> => {
+export const isAuth = async (accessToken:string|undefined, fs:firestoreUtil.FirestoreTransaction):Promise<boolean> => {
   // 開発環境の場合は環境変数を見る
   if(util.isEnv() && !USE_AUTH){
     systemLogger.warn("env not use auth");
@@ -38,7 +39,8 @@ export const isAuth = async (accessToken:string|undefined):Promise<boolean> => {
     );
     // payload.expはエポック秒なので、エポックミリ秒に変換
     const expMilliSecond = payload.exp * 1000;
-    if(expMilliSecond > (new Date()).getTime()){
+    const loginUser = await fs.getCollection(firestoreUtil.COLLECTION_PATH.M_USER, "username", firestoreUtil.createWhere("username", "==", payload.username))
+    if(expMilliSecond > (new Date()).getTime() && loginUser.length > 0){
       systemLogger.debug("認証ok");
       return true;
     }else{
