@@ -15,14 +15,19 @@
     "prodBatch": "npm run test && npm run build && xcopy src\\batch\\dbdata\\ dist\\batch\\dbdata\\ /s /y /h && npx env-cmd -f .env.prod node dist/batch/hoge.js",
     "------↓CloudRunデプロイ------": "",
     "deployApi": "npm-run-all createDockerImage setTagToDockerImage pushDockerImage deployCloudRun",
+    "deployCheckNewBook": "npm-run-all createDockerImageCheckNewBook setTagToDockerImageCheckNewBook pushDockerImageCheckNewBook deployCloudRunCheckNewBook",
     "------↓モジュール------": "",
     "test": "npx env-cmd -f .env.dev npx jest",
     "clean": "rimraf dist",
     "tsc": "tsc",
     "createDockerImage": "npm run test && docker build --file=Dockerfile_api -t bookutilapi .",
+    "createDockerImageCheckNewBook": "npm run test && docker build --file=Dockerfile_checkNewBook -t bookutilcheckNewBook .",
     "setTagToDockerImage": "docker tag bookutilapi asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilapi:v1 && docker tag bookutilapi asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilapi:latest",
+    "setTagToDockerImageCheckNewBook": "docker tag bookutilcheckNewBook asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilcheckNewBook:v1 && docker tag bookutilcheckNewBook asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilcheckNewBook:latest",
     "pushDockerImage": "docker push asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilapi:v1 && docker push asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilapi:latest",
-    "deployCloudRun": "gcloud run deploy bookutilapi --image asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilapi:v1 --platform managed --memory 128M --cpu 1"
+    "pushDockerImageCheckNewBook": "docker push asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilcheckNewBook:v1 && docker push asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilcheckNewBook:latest",
+    "deployCloudRun": "gcloud run deploy bookutilapi --image asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilapi:v1 --platform managed --memory 128Mi --cpu 1.0",
+    "deployCloudRunCheckNewBook": "gcloud run job deploy bookutilcheckNewBook --image asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilcheckNewBook:v1 --platform managed --memory 512Mi --cpu 1"
 
   },
   "author": "",
