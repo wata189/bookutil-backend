@@ -22,12 +22,12 @@ export const wrapAsyncMiddleware = (
 //////////// ルーティング
 //図書館リスト取得
 router.get('/libraries/fetch', wrapAsyncMiddleware(async (req, res) => {
-  const isAuth = await authUtil.isAuth(req.query.accessToken?.toString());
-
-  //ログイン済みでも外部連携でもなければログインエラー
-  validationUtil.isAuth(res, isAuth);
-
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    const isAuth = await authUtil.isAuth(req.query.accessToken?.toString(), fs);
+  
+    //ログイン済みでも外部連携でもなければログインエラー
+    validationUtil.isAuth(res, isAuth);
+
     const libraries = await models.fetchLibraries(fs)
     return {libraries};
   }]);
@@ -37,9 +37,9 @@ router.get('/libraries/fetch', wrapAsyncMiddleware(async (req, res) => {
 
 //Toread初期処理
 router.get("/toread/init", wrapAsyncMiddleware(async (req, res) => {
-  const isAuth = await authUtil.isAuth(req.query.accessToken?.toString());
-
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    const isAuth = await authUtil.isAuth(req.query.accessToken?.toString(), fs);
+  
     return await models.initToread(isAuth, fs);
   }]);
   res.status(util.STATUS_CODES.OK);
@@ -49,14 +49,15 @@ router.get("/toread/init", wrapAsyncMiddleware(async (req, res) => {
 //Toread新規作成
 router.post("/toread/create", wrapAsyncMiddleware(async (req, res) => {
   const params:models.BookParams = req.body;
-
-  const isAuth = await authUtil.isAuth(params.accessToken);
-  //ログイン済みでも外部連携でもなければログインエラー
-  validationUtil.isAuth(res, isAuth, params.isExternalCooperation);
-  //パラメータチェック
-  validationUtil.isValidBook(res, params);
-
+  let isAuth = false;
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+
+    isAuth = await authUtil.isAuth(params.accessToken, fs);
+    //ログイン済みでも外部連携でもなければログインエラー
+    validationUtil.isAuth(res, isAuth, params.isExternalCooperation);
+    //パラメータチェック
+    validationUtil.isValidBook(res, params);
+  
     //ISBN被りチェック
     await validationUtil.isCreateUniqueIsbn(res, params.isbn, fs);
     //DBに格納
@@ -73,15 +74,16 @@ router.post("/toread/create", wrapAsyncMiddleware(async (req, res) => {
 router.post("/toread/update", wrapAsyncMiddleware(async (req, res) => {
   const params:models.BookParams = req.body;
   const documentId = params.documentId || "";
-
-  const isAuth = await authUtil.isAuth(params.accessToken);
-  //ログイン済みでなければログインエラー
-  validationUtil.isAuth(res, isAuth);
-  //パラメータチェック
-  validationUtil.isValidBook(res, params);
-  //form情報以外のパラメータチェック
-  validationUtil.isValidUpdateBook(res, params);
+  let isAuth = false;
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+
+    isAuth = await authUtil.isAuth(params.accessToken, fs);
+    //ログイン済みでなければログインエラー
+    validationUtil.isAuth(res, isAuth);
+    //パラメータチェック
+    validationUtil.isValidBook(res, params);
+    //form情報以外のパラメータチェック
+    validationUtil.isValidUpdateBook(res, params);
     //ID存在チェック
     await validationUtil.isExistBookId(res, documentId, fs);
     //ISBN被りチェック
@@ -102,13 +104,14 @@ router.post("/toread/update", wrapAsyncMiddleware(async (req, res) => {
 //Toread削除
 router.post("/toread/delete", wrapAsyncMiddleware(async (req, res) => {
   const params:models.SimpleBooksParams = req.body;
-
-  const isAuth = await authUtil.isAuth(params.accessToken);
-  //ログイン済みでなければログインエラー
-  validationUtil.isAuth(res, isAuth);
-  //パラメータチェック
-  validationUtil.isValidBooks(res, params);
+  let isAuth = false;
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+
+    isAuth = await authUtil.isAuth(params.accessToken, fs);
+    //ログイン済みでなければログインエラー
+    validationUtil.isAuth(res, isAuth);
+    //パラメータチェック
+    validationUtil.isValidBooks(res, params);
     //ID存在チェック
     await validationUtil.isExistBooksId(res, params.books, fs);
     //コンフリクトチェック
@@ -128,15 +131,15 @@ router.post("/toread/delete", wrapAsyncMiddleware(async (req, res) => {
 //Toreadタグ追加
 router.post("/toread/tag/add", wrapAsyncMiddleware(async (req, res) => {
   const params:models.SimpleBooksParams = req.body;
-
-  const isAuth = await authUtil.isAuth(params.accessToken);
-  //ログイン済みでなければログインエラー
-  validationUtil.isAuth(res, isAuth);
-  //パラメータチェック
-  validationUtil.isValidBooks(res, params);
-  //タグのパラメータチェック
-  validationUtil.isValidTag(res, params);
+  let isAuth = false;
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    isAuth = await authUtil.isAuth(params.accessToken, fs);
+    //ログイン済みでなければログインエラー
+    validationUtil.isAuth(res, isAuth);
+    //パラメータチェック
+    validationUtil.isValidBooks(res, params);
+    //タグのパラメータチェック
+    validationUtil.isValidTag(res, params);
     //ID存在チェック
     await validationUtil.isExistBooksId(res, params.books, fs);
     //コンフリクトチェック
