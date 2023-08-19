@@ -134,7 +134,7 @@ _old
 .env
 .env*
 src/batch/dbdata
-Dockerfile
+Dockerfile*
 
 # firebase local
 emulator_data
