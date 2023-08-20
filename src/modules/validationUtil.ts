@@ -177,15 +177,19 @@ export const isValidTag = (res:Response, params:models.BooksParams) => {
 };
 
 //ID存在チェック　複数
-export const isExistBooksId = async (res:Response, books:models.SimpleBook[], fs:firestoreUtil.FirestoreTransaction) => {
-  for await (const book of books){
-    await isExistBookId(res, book.documentId, fs);
+export const isExistBooksId = async (res:Response, books:models.SimpleBook[], fs:firestoreUtil.FirestoreTransaction) => {  
+  const promises = [];
+  for(const book of books){
+    promises.push(isExistBookId(res, book.documentId, fs));
   }
+  const results = (await Promise.all(promises));
 };
 
 //コンフリクトチェック　複数
 export const isNotConflictBooks = async (res:Response, books:models.SimpleBook[], fs:firestoreUtil.FirestoreTransaction) => {
-  for await (const book of books){
-    await isNotConflictBook(res, book.documentId, book.updateAt, fs);
+  const promises = [];
+  for(const book of books){
+    promises.push(isNotConflictBook(res, book.documentId, book.updateAt, fs));
   }
+  const results = (await Promise.all(promises));
 };

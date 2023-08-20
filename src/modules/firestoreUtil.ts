@@ -95,9 +95,8 @@ export const createWhere = (fieldPath:string, opStr:WhereFilterOp, value: unknow
 export const tran = async (funcs:Function[]) => {
   const fs = new FirestoreTransaction();
   let result = {};
-  for(const func of funcs){
+  for await(const func of funcs){
     // 配列として渡したfunctionを同期的に実行
-    // for awaitとかだと並列で実行してしまうので、「DBを更新してから再度読み取る」みたいな処理を実行できない
     result = await runTransaction(fs.db, async (transaction) => {
       fs.transaction = transaction;
       return await func(fs)

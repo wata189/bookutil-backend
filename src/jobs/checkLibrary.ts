@@ -1,15 +1,18 @@
 import { systemLogger } from "../modules/logUtil";
+import {checkLibrary} from "../modules/models";
+import * as firestoreUtil from "../modules/firestoreUtil";
 
 // Define main script
 const main = async () => {
   systemLogger.debug("checkLibrary start");
-  
+  const data = await firestoreUtil.tran([checkLibrary])
   systemLogger.debug("checkLibrary end");
 };
 
 // Start script
 main().catch(err => {
-  process.exit(1); // Retry Job Task by exiting the process
+  systemLogger.error(err);
+  process.exit(1);
 });
 
 
