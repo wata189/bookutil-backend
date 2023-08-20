@@ -46,6 +46,31 @@ export const getToreadBook = async (documentId:string, fs:firestoreUtil.Firestor
   return await fs.getDocument(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, documentId);
 };
 
+export const formatDateToStr = (date: Date, format: string) => {
+  const symbol = {
+    M: date.getMonth() + 1,
+    d: date.getDate(),
+    h: date.getHours(),
+    m: date.getMinutes(),
+    s: date.getSeconds(),
+  };
+
+  const formatted = format.replace(/(M+|d+|h+|m+|s+)/g, (v) =>
+    ((v.length > 1 ? "0" : "") + symbol[v.slice(-1) as keyof typeof symbol]).slice(-2)
+  );
+
+  return formatted.replace(/(y+)/g, (v) =>
+    date.getFullYear().toString().slice(-v.length)
+  );
+};
+
+
+// set→array変換で重複削除
+// javascriptはsetも順序が保証される
+export const removeDuplicateElements = (array:any[]) => {
+  return [...(new Set(array))]
+};
+
 export const sendJson = (res: Response, msg?: string, data?: Object): void => {
   // 引数なかった場合の処理
   if (!res.statusCode) res.status(STATUS_CODES.OK);
