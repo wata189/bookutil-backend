@@ -242,7 +242,7 @@ export const checkLibrary = async (fs:firestoreUtil.FirestoreTransaction) => {
     // タグ更新
     // 図書館未定タグと図書館タグすべてけす
     // 「図書館」という文字列が入るタグを削除すればよい
-    let updateTags = book.tags.filter(tag => tag.includes("図書館"));
+    let updateTags = book.tags.filter(tag => !tag.includes("図書館"));
     // 今の図書館タグ追加する
     updateTags.push(library.city + "図書館");
     updateTags.push("よみたい");
