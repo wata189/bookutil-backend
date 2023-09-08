@@ -86,7 +86,7 @@ const checkLibrary = async (fs:firestoreUtil.FirestoreTransaction) => {
     // 最優先図書館（orderNum===0）の場合は図書館チェクフラグ消す
     bookParams.newBookCheckFlg = library.orderNum === 0 ? 0 : 1;
     // 他URLが入っている場合はそれを尊重　空の場合は予約URLを設定する
-    bookParams.otherUrl = book.otherUrl ? book.otherUrl : searchResult.reserveUrl;
+    bookParams.memo = book.memo ? book.memo : searchResult.reserveUrl;
 
     promises.push(models.updateToreadBook(book.documentId, bookParams, fs));
 

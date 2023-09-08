@@ -58,9 +58,6 @@ export const isValidBook = (res:Response, params:any) => {
       validationCmds.push({param:params.page, func:isNumber});
       validationCmds.push({param:Number(params.page), func: isPlus})
     }
-    if(isExist(params.otherUrl)){
-      validationCmds.push({param:params.otherUrl, func: isUrl});
-    }
     if(isExist(params.coverUrl)){
       validationCmds.push({param:params.coverUrl, func: isUrl});
     }

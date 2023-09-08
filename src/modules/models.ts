@@ -40,7 +40,7 @@ export type ToreadBook = {
   authorName: string | null
   publisherName: string | null
   page: number | null
-  otherUrl: string | null
+  memo: string | null
   coverUrl: string
   newBookCheckFlg: number
   updateAt: number
@@ -60,7 +60,7 @@ export const fetchToreadBooks = async (isAuth:boolean, fs:firestoreUtil.Firestor
       authorName: resultRow.author_name,
       publisherName: resultRow.publisher_name,
       page: resultRow.page,
-      otherUrl: resultRow.other_url,
+      memo: resultRow.memo || null,
       coverUrl: resultRow.cover_url,
       newBookCheckFlg: resultRow.new_book_check_flg,
       updateAt: resultRow.update_at.seconds,
@@ -98,7 +98,7 @@ export type BookParams = {
   page: number | null
   authorName: string | null
   publisherName: string | null
-  otherUrl: string | null
+  memo: string | null
   coverUrl: string | null
   newBookCheckFlg: number
   tags: string[]
@@ -123,7 +123,7 @@ export type BookDocument = {
   page: number | null
   author_name: string | null
   publisher_name: string | null
-  other_url: string | null
+  memo: string | null
   cover_url: string | null
   new_book_check_flg: number
   tags: string[]
@@ -139,7 +139,7 @@ const toreadBookParamsToDocument = (params:BookParams):BookDocument => {
     "page": params.page,
     "author_name": params.authorName,
     "publisher_name": params.publisherName,
-    "other_url": params.otherUrl,
+    "memo": params.memo,
     "cover_url": params.coverUrl,
     "new_book_check_flg": params.newBookCheckFlg,
     "tags": params.tags,
