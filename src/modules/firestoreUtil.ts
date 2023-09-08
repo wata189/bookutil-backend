@@ -110,5 +110,6 @@ export const COLLECTION_PATH = {
   M_LIBRARY: "/m_library",
   M_TOREAD_TAG: "/m_toread_tag",
   M_USER: "/m_user",
-  T_TOREAD_BOOK: "/t_toread_book"
+  T_TOREAD_BOOK: "/t_toread_book",
+  T_NEW_BOOK: "/t_new_book"
 };

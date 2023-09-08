@@ -1,5 +1,7 @@
 import axiosBase, { AxiosResponse } from "axios";
-const DISCORD_URL = process.env.DISCORD_URL || "";
+const DISCORD_URL_CHECK_LIBRARY = process.env.DISCORD_URL_CHECK_LIBRARY || "";
+const DISCORD_URL_NEW_BOOK_DISCOVER = process.env.DISCORD_URL_NEW_BOOK_DISCOVER || "";
+const DISCORD_URL_NEW_BOOK_SALE = process.env.DISCORD_URL_NEW_BOOK_SALE || "";
 
 const axios = axiosBase.create({
   headers: {
@@ -8,6 +10,18 @@ const axios = axiosBase.create({
   }
 });
 
-export const send = async (msg:string) => {
-  await axios.post(DISCORD_URL, {username: "新刊チェックくん", content: msg});
+const send = async (url:string, username:string, msg:string) => {
+  return await axios.post(url, {username, content:msg})
+};
+
+export const sendCheckLibrary = async (msg:string) => {
+  await send(DISCORD_URL_CHECK_LIBRARY, "図書館チェックくん", msg);
+};
+
+export const sendNewBookDiscover = async (msg:string) => {
+  await send(DISCORD_URL_NEW_BOOK_DISCOVER, "新刊発見くん", msg);
+};
+
+export const sendNewBookSale = async (msg:string) => {
+  await send(DISCORD_URL_NEW_BOOK_SALE, "新刊発売くん", msg);
 };
