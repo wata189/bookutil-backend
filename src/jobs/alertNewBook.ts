@@ -5,22 +5,7 @@ import ical from "node-ical";
 import * as util from "../modules/util";
 import * as discordUtil from "../modules/discordUtil";
 const CLIENT_URL = process.env.CLIENT_URL;
-
-
 const SINKAN_NET_ICAL = process.env.SINKAN_NET_ICAL || "";
-
-// Define main script
-const main = async () => {
-  systemLogger.debug("alertNewBook start");
-  const data = await firestoreUtil.tran([discoverNewBook, alertNewBookSale])
-  systemLogger.debug("alertNewBook end");
-};
-
-// Start script
-main().catch(err => {
-  systemLogger.error(err);
-  process.exit(1);
-});
 
 type NewBookDocument = {
   isbn: string;
@@ -170,3 +155,16 @@ const alertNewBookSale = async (fs:firestoreUtil.FirestoreTransaction) => {
   }
   const results = (await Promise.all(promises));
 }
+
+// Define main script
+const main = async () => {
+  systemLogger.debug("alertNewBook start");
+  const data = await firestoreUtil.tran([discoverNewBook, alertNewBookSale])
+  systemLogger.debug("alertNewBook end");
+};
+
+// Start script
+main().catch(err => {
+  systemLogger.error(err);
+  process.exit(1);
+});

@@ -6,23 +6,6 @@ import { checkCalil } from "../modules/calilUtil";
 import * as discordUtil from "../modules/discordUtil";
 const CLIENT_URL = process.env.CLIENT_URL;
 
-// Define main script
-const main = async () => {
-  systemLogger.debug("checkLibrary start");
-  systemLogger.debug(new Date());
-  const data = await firestoreUtil.tran([checkLibrary])
-  systemLogger.debug("checkLibrary end");
-};
-
-// Start script
-main().catch(err => {
-  systemLogger.error(err);
-  process.exit(1);
-});
-
-
-
-
 const checkLibrary = async (fs:firestoreUtil.FirestoreTransaction) => {
   // newBookCheckFlg立ってる図書館を取得
   const libraries = await searchCheckNewBookLibraries(fs);
@@ -109,4 +92,21 @@ const searchCheckNewBookToreadBooks = async (fs:firestoreUtil.FirestoreTransacti
   return (await models.fetchToreadBooks(true, fs)).filter(book => {
     return book.newBookCheckFlg && book.isbn && util.isIsbn(book.isbn); // 図書館チェックフラグたち、isbnがあるもののみ
   });
-}
+};
+
+// Define main script
+const main = async () => {
+  systemLogger.debug("checkLibrary start");
+  const data = await firestoreUtil.tran([checkLibrary])
+  systemLogger.debug("checkLibrary end");
+};
+
+// Start script
+main().catch(err => {
+  systemLogger.error(err);
+  process.exit(1);
+});
+
+
+
+
