@@ -9,6 +9,7 @@ const CLIENT_URL = process.env.CLIENT_URL;
 // Define main script
 const main = async () => {
   systemLogger.debug("checkLibrary start");
+  systemLogger.debug(new Date());
   const data = await firestoreUtil.tran([checkLibrary])
   systemLogger.debug("checkLibrary end");
 };
