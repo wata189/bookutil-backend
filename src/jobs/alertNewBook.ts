@@ -42,8 +42,6 @@ const discoverNewBook = async (fs:firestoreUtil.FirestoreTransaction) => {
     return Number(before7DayStr) <= Number(startStr);
   });
 
-  console.log(events);
-
   // 新刊コレクションに登録されていないASINを抽出
   const newBooks:NewBookDocument[] = [];
   const uidExp = /^[A-Z]{2}[0-9]{9}[0-9X]/;
@@ -97,6 +95,8 @@ const discoverNewBook = async (fs:firestoreUtil.FirestoreTransaction) => {
     newBooks.push(newBook);
   }
 
+  if(newBooks.length <= 0)return
+
   // 通知自体のメッセージ
   const yyyyMMdd = util.formatDateToStr(new Date(), "yyyy/MM/dd");
   await discordUtil.sendNewBookDiscover(`【${yyyyMMdd}】新刊が見つかったよ！`);
@@ -106,8 +106,11 @@ const discoverNewBook = async (fs:firestoreUtil.FirestoreTransaction) => {
     // DB格納
     promises.push(fs.createDocument(firestoreUtil.COLLECTION_PATH.T_NEW_BOOK, newBook));
     // ディスコ送信
-    const msg = `- ${newBook.author_name}『${newBook.book_name}』 [bookutilに登録](${CLIENT_URL}/toread?isbn=${newBook.isbn}&bookName=${newBook.book_name}&authorName=${newBook.author_name}&publisherName=${newBook.publisher_name}&newBookCheckFlg=1)`;
+    const url = encodeURI(`${CLIENT_URL}/toread?isbn=${newBook.isbn}&bookName=${newBook.book_name}&authorName=${newBook.author_name}&publisherName=${newBook.publisher_name}&newBookCheckFlg=1`);
+    const msg = `- ${util.formatDateToStr(new Date(newBook.publish_date), "yyyy/MM/dd")} ${newBook.author_name}『${newBook.book_name}』 [bookutilに登録](${url})`;
     promises.push(discordUtil.sendNewBookDiscover(msg));
+    // あまり高速でディスコに送るとエラー出るので、10秒待つ
+    await util.wait(10);
   }
   const results = (await Promise.all(promises));
 };
@@ -152,6 +155,8 @@ const alertNewBookSale = async (fs:firestoreUtil.FirestoreTransaction) => {
   for(const dbNewBook of dbNewBooks){
     const msg = `- ${dbNewBook.author_name}『${dbNewBook.book_name}』 [bookutilで開く](${CLIENT_URL}/toread?filterCondWord=${dbNewBook.isbn})`;
     promises.push(discordUtil.sendNewBookSale(msg));
+    // あまり高速でディスコに送るとエラー出るので、10秒待つ
+    await util.wait(10);
   }
   const results = (await Promise.all(promises));
 }

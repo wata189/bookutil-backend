@@ -79,6 +79,8 @@ const checkLibrary = async (fs:firestoreUtil.FirestoreTransaction) => {
  - [予約URLを開く](${searchResult.reserveUrl})
  - [bookutilで開く](${CLIENT_URL}/toread?filterCondWord=${book.isbn})`;
     promises.push(discordUtil.sendCheckLibrary(msg));
+    // あまり高速でディスコに送るとエラー出るので、10秒待つ
+    await util.wait(10);
   }
   const results = (await Promise.all(promises));
 };

@@ -82,3 +82,7 @@ export const sendJson = (res: Response, msg?: string, data?: Object): void => {
 
   systemLogger.info(`${res.statusCode} ${msg}`);
 };
+
+export const wait = (sec:number) => {
+  return new Promise(resolve => setTimeout(resolve, sec*1000));
+};
