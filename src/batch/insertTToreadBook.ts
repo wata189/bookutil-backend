@@ -46,7 +46,7 @@ const documents:models.BookDocument[] = sendToreadBook.filter((row:any) => row.d
     author_name: row.author_name,
     publisher_name: row.publisher_name,
     page: row.page,
-    other_url: row.other_url,
+    memo: row.memo,
     cover_url: `https://cover.openbd.jp/${isbn13}.jpg` || null,
     new_book_check_flg: row.new_book_check_flg,
     create_user: row.create_user,
