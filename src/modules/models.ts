@@ -5,10 +5,15 @@ import { removeDuplicateElements } from "./util";
 export const fetchLibraries = async (fs:firestoreUtil.FirestoreTransaction) => {
   const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.M_LIBRARY, "order_num");
 
-  const weekNum = (new Date()).getDay();
-
   return result.map((resultRow) => {
-    const businessHour = resultRow.business_hours.find((hour:any) => hour.day_of_week === weekNum);
+    const businessHours = resultRow.business_hours.map((hour:any) => {
+      return {
+        dayOfWeek: hour.day_of_week,
+        isOpen: hour.is_open,
+        startTime: hour.start_time,
+        endTime: hour.end_time
+      }
+    })
     return {
       id: resultRow.id,
       city: resultRow.city,
@@ -18,10 +23,7 @@ export const fetchLibraries = async (fs:firestoreUtil.FirestoreTransaction) => {
       mapUrl: resultRow.map_url,
       newBookCheckFlg: resultRow.new_book_check_flg,
       orderNum: resultRow.order_num,
-      dayOfWeek: businessHour.day_of_week,
-      isOpen: businessHour.is_open,
-      startTime: businessHour.start_time,
-      endTime: businessHour.end_time
+      businessHours
     };
   });
 };
