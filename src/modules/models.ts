@@ -23,7 +23,11 @@ export const fetchLibraries = async (fs:firestoreUtil.FirestoreTransaction) => {
       mapUrl: resultRow.map_url,
       newBookCheckFlg: resultRow.new_book_check_flg,
       orderNum: resultRow.order_num,
-      businessHours
+      businessHours,
+
+      spUrl: resultRow.sp_url,
+      calendarUrl: resultRow.calendar_url,
+      barcodeUrl: resultRow.barcode_url
     };
   });
 };
