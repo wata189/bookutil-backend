@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase/firestore/lite";
+import { Timestamp } from "firebase-admin/firestore";
 import * as firestoreUtil from "./firestoreUtil";
 import { removeDuplicateElements } from "./util";
 
@@ -54,9 +54,10 @@ export type ToreadBook = {
 }
 export const fetchToreadBooks = async (isAuth:boolean, fs:firestoreUtil.FirestoreTransaction):Promise<ToreadBook[]> => {
   //未ログインの場合はwhere句でタグが「プログラミング」を含むものだけ取得する
-  const where = isAuth ? undefined : firestoreUtil.createWhere("tags", "array-contains", "プログラミング");
-
-  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "update_at", where);
+  const fieldPath = isAuth ? undefined : "tags";
+  const opStr = isAuth ? undefined : "array-contains";
+  const value = isAuth ? undefined : "プログラミング";
+  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "update_at", fieldPath, opStr, value);
 
   return result.map((resultRow) => {
     return {

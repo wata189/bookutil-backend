@@ -101,7 +101,7 @@ export const isCreateUniqueIsbn = async (res:Response, isbn:string|null, fs:fire
   // isbn空の場合は問題なし
   if(!isExist(isbn)) return;
 
-  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "isbn", firestoreUtil.createWhere("isbn", "==", isbn));
+  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "isbn", "isbn", "==", isbn);
   if(result.length > 0){
     errorUtil.throwError(res, "同じISBNの本があります", util.STATUS_CODES.BAD_REQUEST);
   }
@@ -112,7 +112,7 @@ export const isUpdateUniqueIsbn = async (res:Response, documentId:string, isbn:s
   //isbn空の場合は問題ない
   if(!isExist(isbn)) return;
   
-  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "isbn", firestoreUtil.createWhere("isbn", "==", isbn));
+  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "isbn", "isbn", "==", isbn);
   const sameIsbnBook = result.find(resultRow => resultRow.documentId !== documentId);
   if(sameIsbnBook){
     errorUtil.throwError(res, "同じISBNの本があります", util.STATUS_CODES.BAD_REQUEST);

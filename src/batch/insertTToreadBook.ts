@@ -1,7 +1,7 @@
 import * as firestoreUtil from "../modules/firestoreUtil";
 import * as models from "../modules/models";
 import * as util from "../modules/util";
-import { Timestamp } from "firebase/firestore/lite";
+import { Timestamp } from "firebase-admin/firestore";
 
 
 import tToreadBook from "./dbdata/bookutil.t_toread_book.json";

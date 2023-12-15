@@ -39,7 +39,7 @@ export const isAuth = async (accessToken:string|undefined, fs:firestoreUtil.Fire
     );
     // payload.expはエポック秒なので、エポックミリ秒に変換
     const expMilliSecond = payload.exp * 1000;
-    const loginUser = await fs.getCollection(firestoreUtil.COLLECTION_PATH.M_USER, "username", firestoreUtil.createWhere("username", "==", payload.username))
+    const loginUser = await fs.getCollection(firestoreUtil.COLLECTION_PATH.M_USER, "username", "username", "==", payload.username)
     if(expMilliSecond > (new Date()).getTime() && loginUser.length > 0){
       systemLogger.debug("認証ok");
       return true;

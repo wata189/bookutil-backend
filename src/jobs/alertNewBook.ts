@@ -1,5 +1,5 @@
 import { systemLogger } from "../modules/logUtil";
-import { Timestamp } from "firebase/firestore/lite";
+import { Timestamp } from "firebase-admin/firestore";
 import * as firestoreUtil from "../modules/firestoreUtil";
 import ical from "node-ical";
 import * as util from "../modules/util";
@@ -57,7 +57,7 @@ const discoverNewBook = async (fs:firestoreUtil.FirestoreTransaction) => {
     }
 
     // t_new_bookにあったら発見済なのでループ飛ばす
-    const dbNewBook = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_NEW_BOOK, "isbn", firestoreUtil.createWhere("isbn", "==", isbn));
+    const dbNewBook = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_NEW_BOOK, "isbn", "isbn", "==", isbn);
     if(dbNewBook.length > 0){
       continue
     }
