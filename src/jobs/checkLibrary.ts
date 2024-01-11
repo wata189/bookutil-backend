@@ -14,6 +14,7 @@ const checkLibrary = async (fs:firestoreUtil.FirestoreTransaction) => {
   // 図書館×本で検索 break・continueを使う関係でfor awaitで同期処理
   const searchResults = [];
   for await (const book of toreadBooks){
+    if(!book.isbn){continue;} // isbn未入力は飛ばす
     for(const library of libraries){
       // 検索対象or検索対象より優先度の高い図書館のタグ入っていたら飛ばす
       const cityTags = libraries.filter(tmpLib => tmpLib.orderNum <= library.orderNum)
@@ -22,7 +23,7 @@ const checkLibrary = async (fs:firestoreUtil.FirestoreTransaction) => {
       if(isSearched)continue;
 
       // カーリル処理
-      const calilResult = await checkCalil(book, library.id);
+      const calilResult = await checkCalil(book.isbn, library.id);
 
       // カーリルの結果あった場合のみ更新処理
       if(!calilResult.isExist)continue;

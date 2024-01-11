@@ -1,6 +1,13 @@
 import { Timestamp } from "firebase-admin/firestore";
 import * as firestoreUtil from "./firestoreUtil";
-import { removeDuplicateElements } from "./util";
+import * as util from "./util";
+import * as errorUtil from "./errorUtil";
+import { checkMultiCalil } from "./calilUtil";
+import {Response} from 'express';
+
+
+const TAG_WANT = "よみたい";
+
 
 export const fetchLibraries = async (fs:firestoreUtil.FirestoreTransaction) => {
   const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.M_LIBRARY, "order_num");
@@ -78,7 +85,7 @@ export const fetchToreadBooks = async (isAuth:boolean, fs:firestoreUtil.Firestor
 
 const fetchToreadTags = async (isAuth:boolean, toreadBooks:ToreadBook[], fs:firestoreUtil.FirestoreTransaction) => {
   //未ログインの場合は表示用のタグリスト
-  if(!isAuth) return ["よみたい", "プログラミング", "アルゴリズム"];
+  if(!isAuth) return [TAG_WANT, "プログラミング", "アルゴリズム"];
 
   //DBからタグ取得
   const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.M_TOREAD_TAG, "order_num");
@@ -93,7 +100,7 @@ const fetchToreadTags = async (isAuth:boolean, toreadBooks:ToreadBook[], fs:fire
   toreadBooks.forEach(book => tags = tags.concat(book.tags));
 
   // 重複を削除
-  return removeDuplicateElements(tags);
+  return util.removeDuplicateElements(tags);
 };
 
 export type BookParams = {
@@ -159,6 +166,11 @@ export type SimpleBook = {
   documentId: string
   updateAt: number
 };
+export type SimpleBookParams = {
+  book: SimpleBook
+  user: string
+  accessToken: string
+};
 export type SimpleBooksParams = {
   books: SimpleBook[]
   tags?: string[]
@@ -186,4 +198,52 @@ export const addToreadTag = async (params:SimpleBooksParams, fs:firestoreUtil.Fi
     promises.push(fs.addArray(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, book.documentId, "tags", tags));
   }
   const results = (await Promise.all(promises));
+};
+
+export const addWantTag = async (res:Response, params:SimpleBookParams, fs: firestoreUtil.FirestoreTransaction) => {
+
+    // 本の情報を取得
+    const book = await util.getToreadBook(params.book.documentId, fs);
+    if(!book){
+      // 本の情報がないエラー（普通起こらないはず）
+      errorUtil.throwError(res, "本が登録されていません", util.STATUS_CODES.INTERNAL_SERVER_ERROR);
+      return;
+    }
+    const libraryTag = await findLibraryTag(book.isbn, fs);
+    if(!libraryTag){
+      // 本が図書館にないエラー
+      errorUtil.throwError(res, "本が図書館にありません", util.STATUS_CODES.INTERNAL_SERVER_ERROR);
+      return;
+    }
+    const wantTags = [libraryTag];
+    // よみたいタグが登録されていない場合はよみたいタグも一緒に追加
+    const bookTags:string[] = book.tags;
+    if(!bookTags.includes(TAG_WANT)){
+      wantTags.push(TAG_WANT);
+    }
+    
+    //DBに格納
+    await fs.addArray(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, book.documentId, "tags", wantTags)
+
+    return;
+};
+
+export const findLibraryTag = async (isbn: string, fs:firestoreUtil.FirestoreTransaction) => {
+  const libraries = await fetchLibraries(fs);
+  const libraryIds = libraries.map(library => library.id);
+  const calilResult = await checkMultiCalil(isbn, libraryIds);
+  let libraryTag:string|null = null;
+  if(calilResult.isExist){
+    const library = libraries.find(library => library.id === calilResult.libraryId);
+    if(library){
+      libraryTag = library.city + "図書館";
+    }
+  }
+  return libraryTag;
+};
+
+export type GetWantTagParams = {
+  isbn: string,
+  user: string,
+  accessToken: string
 };

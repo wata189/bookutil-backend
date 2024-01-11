@@ -156,5 +156,54 @@ router.post("/toread/tag/add", wrapAsyncMiddleware(async (req, res) => {
   util.sendJson(res, 'OK', data);
 }));
 
+// よみたいタグ追加
+router.post("/toread/tag/want/add", wrapAsyncMiddleware(async (req, res) => {
+  const params:models.SimpleBookParams = req.body;
+  let isAuth = false;
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    isAuth = await authUtil.isAuth(params.accessToken, fs);
+    //ログイン済みでなければログインエラー
+    validationUtil.isAuth(res, isAuth);
+    //パラメータチェック
+    validationUtil.isValidSimpleBook(res, params);
+    //ID存在チェック
+    await validationUtil.isExistBookId(res, params.book.documentId, fs);
+    //コンフリクトチェック
+    await validationUtil.isNotConflictBook(res, params.book.documentId, params.book.updateAt, fs);
+
+    await models.addWantTag(res, params, fs);
+    return;
+  }, async (fs:firestoreUtil.FirestoreTransaction) => {
+    return await models.initToread(isAuth, fs);
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
+}));
+// よみたいタグ検索
+router.post("/toread/tag/want/get", wrapAsyncMiddleware(async (req, res) => {
+  const params:models.GetWantTagParams = req.body;
+  let isAuth = false;
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    isAuth = await authUtil.isAuth(params.accessToken, fs);
+    //ログイン済みでなければログインエラー
+    validationUtil.isAuth(res, isAuth);
+    //パラメータチェック
+    validationUtil.isValidGetWantTagParams(res, params);
+
+    // タグ取得
+    const wantTags = [];
+    const libraryTag = await models.findLibraryTag(params.isbn, fs);
+    if(libraryTag){
+      wantTags.push(libraryTag);
+      wantTags.push("よみたい")
+    }
+    
+    return;
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
+}));
+
+
 //routerをモジュールとして扱う準備
 module.exports = router;

@@ -11,8 +11,8 @@
     "-------↓ローカルfirestore----": "",
     "devFirestore": "firebase emulators:start --import=emulator_data --export-on-exit",
     "------↓バッチ実行----": "",
-    "debugBatch": "npx env-cmd -f .env.dev node dist/jobs/checkLibrary.js",
-    "devBatch": "npm run test && npm run build && xcopy src\\batch\\dbdata\\ dist\\batch\\dbdata\\ /s /y /h && npx env-cmd -f .env.dev node dist/jobs/alertNewBook.js",
+    "debugBatch": "npx env-cmd -f .env.dev node dist/batch/sandbox.js",
+    "devBatch": "npm run test && npm run build && xcopy src\\batch\\dbdata\\ dist\\batch\\dbdata\\ /s /y /h && npx env-cmd -f .env.dev node dist/batch/sandbox.js",
     "prodBatch": "npm run test && npm run build && xcopy src\\batch\\dbdata\\ dist\\batch\\dbdata\\ /s /y /h && npx env-cmd -f .env.prod node dist/batch/hoge.js",
     "------↓CloudRunデプロイ------": "",
     "deployApi": "npm-run-all createDockerImage setTagToDockerImage pushDockerImage deployCloudRun",
@@ -33,8 +33,7 @@
     "pushDockerImageAlertNewBook": "docker push asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilalertnewbook:v1 && docker push asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilalertnewbook:latest",
     "deployCloudRun": "gcloud run deploy bookutilapi --image asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilapi:v1 --platform managed --memory 128Mi --cpu 1.0",
     "deployCloudRunCheckLibrary": "gcloud run jobs update bookutilchecklibrary --memory 512Mi --cpu 1",
-    "deployCloudRunAlertNewBook": "gcloud run jobs create bookutilalertnewbook --image asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilalertnewbook:v1 --memory 512Mi --cpu 1",
-    "deployCloudRunAlertNewBookUpdate": "gcloud run jobs update bookutilalertnewbook --memory 512Mi --cpu 1"
+    "deployCloudRunAlertNewBook": "gcloud run jobs update bookutilalertnewbook --memory 512Mi --cpu 1"
   },
   "author": "",
   "license": "ISC",

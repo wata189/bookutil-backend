@@ -85,6 +85,39 @@ export const isValidUpdateBook = (res:Response, params:models.BookParams) => {
   }
 
 };
+export const isValidSimpleBook = (res:Response, params:models.SimpleBookParams) => {
+
+  try{
+    const validationCmds:ValidationCmd[] = [
+      {param: params.book, func: isExist},
+      {param: params.book.documentId, func:isExist},
+      {param: params.book.updateAt, func:isExist},
+      {param: params.book.updateAt, func:isNumber},
+      {param: params.user, func: isExist}
+    ];
+
+    runValidationCmds(res, validationCmds);
+  }catch(e){
+    systemLogger.error(e);
+    errorUtil.throwError(res, "不正なパラメータがあります", util.STATUS_CODES.BAD_REQUEST);
+  }
+
+};
+export const isValidGetWantTagParams = (res:Response, params:models.GetWantTagParams) => {
+
+  try{
+    const validationCmds:ValidationCmd[] = [
+      {param: params.isbn, func: isExist},
+      {param: params.isbn, func: isIsbn},
+      {param: params.user, func: isExist}
+    ];
+
+    runValidationCmds(res, validationCmds);
+  }catch(e){
+    systemLogger.error(e);
+    errorUtil.throwError(res, "不正なパラメータがあります", util.STATUS_CODES.BAD_REQUEST);
+  }
+};
 
 const runValidationCmds = (res:Response, cmds:ValidationCmd[]) => {
   for(const cmd of cmds){
