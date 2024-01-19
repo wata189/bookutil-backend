@@ -193,12 +193,8 @@ router.post("/toread/tag/want/get", wrapAsyncMiddleware(async (req, res) => {
     // タグ取得
     const wantTags = [];
     const libraryTag = await models.findLibraryTag(params.isbn, fs);
-    if(libraryTag){
-      wantTags.push(libraryTag);
-      wantTags.push("よみたい")
-    }
     
-    return;
+    return {libraryTag};
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
