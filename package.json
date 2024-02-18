@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/app.js",
+  "engines": {
+    "node": "20.5.1"
+  },
   "scripts": {
     "-------↓開発環境----": "",
     "dev": "npm run test && npx env-cmd -f .env.dev ts-node-dev --respawn src/app.ts",
