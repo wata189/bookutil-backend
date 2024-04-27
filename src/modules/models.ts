@@ -115,11 +115,12 @@ const fetchToreadTags = async (isAuth:boolean, toreadBooks:ToreadBook[], fs:fire
   const libraryTags:string[] = libraries.map(library => library.city + "図書館");
 
   // toreadTags
-  let tags = masterTags.concat(libraryTags);
-  toreadBooks.forEach(book => tags = tags.concat(book.tags));
+  let toreadTags:string[] = [];
+  toreadBooks.forEach(book => toreadTags = toreadTags.concat(book.tags));
 
   // 重複を削除
-  return util.removeDuplicateElements(tags);
+  const allTags = masterTags.concat(libraryTags).concat(toreadTags.sort());
+  return util.removeDuplicateElements(allTags);
 };
 
 export type BookParams = {
