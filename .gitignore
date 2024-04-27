@@ -139,3 +139,5 @@ Dockerfile*
 # firebase local
 emulator_data
 .firebaserc
+
+bookutil-c843f04a0bfd.json

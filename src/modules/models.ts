@@ -59,6 +59,21 @@ export type ToreadBook = {
   updateAt: number
   tags: string[]
 }
+
+// よみたいポイントの算出　ブックウォーカーよんでいる＞よんでいる＞よみたい＞その他
+const calcWantPoint = (tags:string[]):number => {
+  let wantPoint = 0;
+  if(tags.includes("よんでいる")){
+    wantPoint = 2;
+    // ブックウォーカー若干優先
+    if(tags.includes("ブックウォーカー")){
+      wantPoint += 1;
+    }
+  }else if(tags.includes("よみたい")){
+    wantPoint = 1;
+  }
+  return wantPoint;
+};
 export const fetchToreadBooks = async (isAuth:boolean, fs:firestoreUtil.FirestoreTransaction):Promise<ToreadBook[]> => {
   //未ログインの場合はwhere句でタグが「プログラミング」を含むものだけ取得する
   const fieldPath = isAuth ? undefined : "tags";
@@ -66,7 +81,7 @@ export const fetchToreadBooks = async (isAuth:boolean, fs:firestoreUtil.Firestor
   const value = isAuth ? undefined : "プログラミング";
   const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "update_at", fieldPath, opStr, value);
 
-  return result.map((resultRow) => {
+  const books:ToreadBook[] = result.map((resultRow) => {
     return {
       documentId: resultRow.documentId,
       bookName: resultRow.book_name,
@@ -80,6 +95,10 @@ export const fetchToreadBooks = async (isAuth:boolean, fs:firestoreUtil.Firestor
       updateAt: resultRow.update_at.seconds,
       tags: resultRow.tags
     };
+  });
+  // 
+  return books.sort((a, b)=> {
+    return (calcWantPoint(b.tags) - calcWantPoint(a.tags)) || b.updateAt - a.updateAt;
   });
 };
 
