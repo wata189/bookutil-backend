@@ -61,6 +61,9 @@ export const isValidBook = (res:Response, params:any) => {
     if(isExist(params.coverUrl)){
       validationCmds.push({param:params.coverUrl, func: isUrl});
     }
+    if(params.newBookCheckFlg === 1){
+      validationCmds.push({param:params.isbn, func: isExist})
+    }
 
     runValidationCmds(res, validationCmds);
   }catch(e){
