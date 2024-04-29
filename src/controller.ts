@@ -21,9 +21,9 @@ export const wrapAsyncMiddleware = (
 
 //////////// ルーティング
 //図書館リスト取得
-router.get('/libraries/fetch', wrapAsyncMiddleware(async (req, res) => {
+router.post('/libraries/fetch', wrapAsyncMiddleware(async (req, res) => {
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
-    const isAuth = await authUtil.isAuth(req.query.accessToken?.toString(), fs);
+    const isAuth = await authUtil.isAuth(req.body.idToken?.toString(), fs);
   
     //ログイン済みでも外部連携でもなければログインエラー
     validationUtil.isAuth(res, isAuth);
@@ -36,9 +36,9 @@ router.get('/libraries/fetch', wrapAsyncMiddleware(async (req, res) => {
 }));
 
 //Toread初期処理
-router.get("/toread/init", wrapAsyncMiddleware(async (req, res) => {
+router.post("/toread/init", wrapAsyncMiddleware(async (req, res) => {
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
-    const isAuth = await authUtil.isAuth(req.query.accessToken?.toString(), fs);
+    const isAuth = await authUtil.isAuth(req.body.idToken?.toString(), fs);
   
     return await models.initToread(isAuth, fs);
   }]);
@@ -52,7 +52,7 @@ router.post("/toread/create", wrapAsyncMiddleware(async (req, res) => {
   let isAuth = false;
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
 
-    isAuth = await authUtil.isAuth(params.accessToken, fs);
+    isAuth = await authUtil.isAuth(params.idToken, fs);
     //ログイン済みでも外部連携でもなければログインエラー
     validationUtil.isAuth(res, isAuth, params.isExternalCooperation);
     //パラメータチェック
@@ -77,7 +77,7 @@ router.post("/toread/update", wrapAsyncMiddleware(async (req, res) => {
   let isAuth = false;
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
 
-    isAuth = await authUtil.isAuth(params.accessToken, fs);
+    isAuth = await authUtil.isAuth(params.idToken, fs);
     //ログイン済みでなければログインエラー
     validationUtil.isAuth(res, isAuth);
     //パラメータチェック
@@ -107,7 +107,7 @@ router.post("/toread/delete", wrapAsyncMiddleware(async (req, res) => {
   let isAuth = false;
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
 
-    isAuth = await authUtil.isAuth(params.accessToken, fs);
+    isAuth = await authUtil.isAuth(params.idToken, fs);
     //ログイン済みでなければログインエラー
     validationUtil.isAuth(res, isAuth);
     //パラメータチェック
@@ -133,7 +133,7 @@ router.post("/toread/tag/add", wrapAsyncMiddleware(async (req, res) => {
   const params:models.SimpleBooksParams = req.body;
   let isAuth = false;
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
-    isAuth = await authUtil.isAuth(params.accessToken, fs);
+    isAuth = await authUtil.isAuth(params.idToken, fs);
     //ログイン済みでなければログインエラー
     validationUtil.isAuth(res, isAuth);
     //パラメータチェック
@@ -161,7 +161,7 @@ router.post("/toread/tag/want/add", wrapAsyncMiddleware(async (req, res) => {
   const params:models.SimpleBookParams = req.body;
   let isAuth = false;
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
-    isAuth = await authUtil.isAuth(params.accessToken, fs);
+    isAuth = await authUtil.isAuth(params.idToken, fs);
     //ログイン済みでなければログインエラー
     validationUtil.isAuth(res, isAuth);
     //パラメータチェック
@@ -184,7 +184,7 @@ router.post("/toread/tag/want/get", wrapAsyncMiddleware(async (req, res) => {
   const params:models.GetWantTagParams = req.body;
   let isAuth = false;
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
-    isAuth = await authUtil.isAuth(params.accessToken, fs);
+    isAuth = await authUtil.isAuth(params.idToken, fs);
     //ログイン済みでなければログインエラー
     validationUtil.isAuth(res, isAuth);
     //パラメータチェック

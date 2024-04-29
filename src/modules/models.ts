@@ -136,7 +136,7 @@ export type BookParams = {
   coverUrl: string | null
   newBookCheckFlg: number
   tags: string[]
-  accessToken: string
+  idToken: string | null
   isExternalCooperation: boolean
 };
 export const createToreadBook = async (params:BookParams, fs:firestoreUtil.FirestoreTransaction) => {
@@ -189,19 +189,19 @@ export type SimpleBook = {
 export type SimpleBookParams = {
   book: SimpleBook
   user: string
-  accessToken: string
+  idToken: string | null
 };
 export type SimpleBooksParams = {
   books: SimpleBook[]
   tags?: string[]
   user: string
-  accessToken: string
+  idToken: string | null
 };
 export type BooksParams = {
   books: SimpleBook[]
   tags?: string[]
   user: string
-  accessToken: string
+  idToken: string | null
 };
 export const deleteToreadBooks = async (books: SimpleBook[], fs:firestoreUtil.FirestoreTransaction) => {
   const promises = [];
@@ -265,5 +265,5 @@ export const findLibraryTag = async (isbn: string, fs:firestoreUtil.FirestoreTra
 export type GetWantTagParams = {
   isbn: string,
   user: string,
-  accessToken: string
+  idToken: string | null
 };

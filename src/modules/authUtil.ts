@@ -2,24 +2,18 @@ import { systemLogger } from "./logUtil";
 import * as util from "./util";
 import * as firestoreUtil from "./firestoreUtil";
 
-import { CognitoJwtVerifier } from "aws-jwt-verify";
+import * as admin from 'firebase-admin';
+import * as auth from 'firebase-admin/auth';
 
 const USE_AUTH = process.env.USE_AUTH === "true";
 const IS_AUTH = process.env.IS_AUTH === "true";
 
-const COGNITO_AUTH_REGION = process.env.COGNITO_AUTH_REGION || "";
-const COGNITO_AUTH_USER_POOL_ID = process.env.COGNITO_AUTH_USER_POOL_ID || "";
-const COGNITO_CRIENT_ID = process.env.COGNITO_CRIENT_ID || "";
-const COGNITO_TOKEN_USE = "access";
-
-const verifier = CognitoJwtVerifier.create({
-  userPoolId: COGNITO_AUTH_USER_POOL_ID,
-  tokenUse: COGNITO_TOKEN_USE,
-  clientId: COGNITO_CRIENT_ID
-});
+const initApp = admin.initializeApp({
+  credential: admin.credential.applicationDefault()
+}, "auth");
 
 // トークンが使えるか確認する処理
-export const isAuth = async (accessToken:string|undefined, fs:firestoreUtil.FirestoreTransaction):Promise<boolean> => {
+export const isAuth = async (idToken:string|null, fs:firestoreUtil.FirestoreTransaction):Promise<boolean> => {
   // 開発環境の場合は環境変数を見る
   if(util.isEnv() && !USE_AUTH){
     systemLogger.warn("env not use auth");
@@ -27,25 +21,28 @@ export const isAuth = async (accessToken:string|undefined, fs:firestoreUtil.Fire
   } 
 
   // アクセストークンない場合はfalse返却
-  if(!accessToken){
+  if(!idToken){
     systemLogger.warn("アクセストークンなし")
     return false;
   }
 
   try{
-    // ペイロード実行　エラーでなければ認証OK
-    const payload = await verifier.verify(
-      accessToken
-    );
-    // payload.expはエポック秒なので、エポックミリ秒に変換
-    const expMilliSecond = payload.exp * 1000;
-    const loginUser = await fs.getCollection(firestoreUtil.COLLECTION_PATH.M_USER, "username", "username", "==", payload.username)
-    if(expMilliSecond > (new Date()).getTime() && loginUser.length > 0){
-      systemLogger.debug("認証ok");
-      return true;
-    }else{
+    const firebaseAuth = auth.getAuth(initApp);
+
+    // idTokenデコードしてエラーでなければ認証OK
+    const decodedToken = await firebaseAuth.verifyIdToken(idToken);
+    // expはエポック秒なので、エポックミリ秒に変換
+    const expMilliSecond = decodedToken.exp * 1000;
+    const loginUser = await fs.getCollection(firestoreUtil.COLLECTION_PATH.M_USER, "email", "email", "==", decodedToken.email);
+    if(expMilliSecond < (new Date()).getTime()){
       systemLogger.warn("期限切れ");
       return false;
+    }else if(loginUser.length === 0){
+      systemLogger.warn("ログインユーザーが不正");
+      return false;
+    }else{
+      systemLogger.debug("認証ok");
+      return true;
     }
 
   }catch(e){

@@ -63,7 +63,7 @@ const checkLibrary = async (fs:firestoreUtil.FirestoreTransaction) => {
     const bookParams:models.BookParams = {
       ...book,
       user: "check library",//更新ユーザーは独自のものにする
-      accessToken: "",
+      idToken: "",
       isExternalCooperation: false
     };
     // 更新タグは重複消す
