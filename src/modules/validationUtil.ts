@@ -135,9 +135,12 @@ const runValidationCmds = (res:Response, cmds:ValidationCmd[]) => {
 //ISBN被りチェック　新規作成
 export const isCreateUniqueIsbn = async (res:Response, isbn:string|null, fs:firestoreUtil.FirestoreTransaction) => {
   // isbn空の場合は問題なし
-  if(!isExist(isbn)) return;
+  if(!isbn || !isExist(isbn)) return;
 
-  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "isbn", "isbn", "==", isbn);
+  const isbn10 = isbn.length === 10 ? isbn : util.isbn13To10(isbn);
+  const isbn13 = isbn.length === 13 ? isbn : util.isbn10To13(isbn);
+
+  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "isbn", "isbn", "in", [isbn10, isbn13]);
   if(result.length > 0){
     errorUtil.throwError(res, "同じISBNの本があります", util.STATUS_CODES.BAD_REQUEST);
   }
@@ -146,9 +149,12 @@ export const isCreateUniqueIsbn = async (res:Response, isbn:string|null, fs:fire
 //ISBN被りチェック　更新
 export const isUpdateUniqueIsbn = async (res:Response, documentId:string, isbn:string|null, fs:firestoreUtil.FirestoreTransaction) => {
   //isbn空の場合は問題ない
-  if(!isExist(isbn)) return;
+  if(!isbn || !isExist(isbn)) return;
+
+  const isbn10 = isbn.length === 10 ? isbn : util.isbn13To10(isbn);
+  const isbn13 = isbn.length === 13 ? isbn : util.isbn10To13(isbn);
   
-  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "isbn", "isbn", "==", isbn);
+  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "isbn", "isbn", "in", [isbn10, isbn13]);
   const sameIsbnBook = result.find(resultRow => resultRow.documentId !== documentId);
   if(sameIsbnBook){
     errorUtil.throwError(res, "同じISBNの本があります", util.STATUS_CODES.BAD_REQUEST);

@@ -86,3 +86,41 @@ export const sendJson = (res: Response, msg?: string, data?: Object): void => {
 export const wait = (sec:number) => {
   return new Promise(resolve => setTimeout(resolve, sec*1000));
 };
+
+export const isbn9To10 = (isbn9:string):string => {
+  const sum = isbn9.split('').reduce((acc, c, i) => {
+      return acc + Number(c[0]) * (10 - i);
+  }, 0);
+  let checkDigit = (11 - sum % 11).toString();
+  if(checkDigit === "10"){
+    checkDigit = "X";
+  }
+  if(checkDigit === "11"){
+    checkDigit = "0";
+  }
+
+  return isbn9 + checkDigit;
+};
+
+export const isbn12To13 = (isbn12: string):string => {
+  // チェックディジット計算
+  const sum = isbn12.split("").map((num:string, index:number) => {
+    //ウェイトは1→3→1→3の順
+    const coefficient = index % 2 === 0 ? 1 : 3;
+    return Number(num) * coefficient;
+  }).reduce((a:number, b:number) => a+b); //sum
+
+  //10で割ったあまり出す
+  const remainder = sum % 10;
+  //あまりが0の場合は0、それ以外は10-あまり
+  const checkDigit = remainder === 0 ? 0 : 10 - remainder;
+  return isbn12 + checkDigit;
+};
+
+export const isbn10To13 = (isbn10:string):string => {
+  return isbn12To13("978" + isbn10.slice(0,-1));
+};
+
+export const isbn13To10 = (isbn13:string):string => {
+  return isbn9To10(isbn13.substring(3, 12));
+};
