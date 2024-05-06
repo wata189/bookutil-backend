@@ -11,6 +11,11 @@ const IS_AUTH = process.env.IS_AUTH === "true";
 const initApp = admin.initializeApp({
   credential: admin.credential.applicationDefault()
 }, "auth");
+const firebaseAuth = auth.getAuth(initApp);
+
+export const decodeToken = async (idToken: string):Promise<auth.DecodedIdToken> => {
+  return await firebaseAuth.verifyIdToken(idToken);
+};
 
 // トークンが使えるか確認する処理
 export const isAuth = async (idToken:string|null, fs:firestoreUtil.FirestoreTransaction):Promise<boolean> => {
@@ -27,10 +32,8 @@ export const isAuth = async (idToken:string|null, fs:firestoreUtil.FirestoreTran
   }
 
   try{
-    const firebaseAuth = auth.getAuth(initApp);
-
     // idTokenデコードしてエラーでなければ認証OK
-    const decodedToken = await firebaseAuth.verifyIdToken(idToken);
+    const decodedToken = await decodeToken(idToken);
     // expはエポック秒なので、エポックミリ秒に変換
     const expMilliSecond = decodedToken.exp * 1000;
     const loginUser = await fs.getCollection(firestoreUtil.COLLECTION_PATH.M_USER, "email", "email", "==", decodedToken.email);
