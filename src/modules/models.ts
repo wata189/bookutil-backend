@@ -123,7 +123,11 @@ const fetchToreadTags = async (isAuth:boolean, toreadBooks:ToreadBook[], fs:fire
   return util.removeDuplicateElements(allTags);
 };
 
-export type BookParams = {
+export type RequestParams = {
+  idToken: string | null
+}
+
+export type BookParams = RequestParams & {
   documentId: string | null
   updateAt: number | null
   user: string
@@ -136,7 +140,6 @@ export type BookParams = {
   coverUrl: string | null
   newBookCheckFlg: number
   tags: string[]
-  idToken: string | null
   isExternalCooperation: boolean
 };
 export const createToreadBook = async (params:BookParams, fs:firestoreUtil.FirestoreTransaction) => {
@@ -186,22 +189,19 @@ export type SimpleBook = {
   documentId: string
   updateAt: number
 };
-export type SimpleBookParams = {
+export type SimpleBookParams = RequestParams & {
   book: SimpleBook
   user: string
-  idToken: string | null
 };
-export type SimpleBooksParams = {
+export type SimpleBooksParams = RequestParams & {
   books: SimpleBook[]
   tags?: string[]
   user: string
-  idToken: string | null
 };
-export type BooksParams = {
+export type BooksParams = RequestParams & {
   books: SimpleBook[]
   tags?: string[]
   user: string
-  idToken: string | null
 };
 export const deleteToreadBooks = async (books: SimpleBook[], fs:firestoreUtil.FirestoreTransaction) => {
   const promises = [];
@@ -262,8 +262,7 @@ export const findLibraryTag = async (isbn: string, fs:firestoreUtil.FirestoreTra
   return libraryTag;
 };
 
-export type GetWantTagParams = {
+export type GetWantTagParams = RequestParams & {
   isbn: string,
-  user: string,
-  idToken: string | null
+  user: string
 };
