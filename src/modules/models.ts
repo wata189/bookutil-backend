@@ -65,8 +65,8 @@ const calcWantPoint = (tags:string[]):number => {
   let wantPoint = 0;
   if(tags.includes("よんでいる")){
     wantPoint = 2;
-    // ブックウォーカー・無料は若干優先
-    if(tags.includes("ブックウォーカー") || tags.includes("無料")){
+    // ブックウォーカーは若干優先
+    if(tags.includes("ブックウォーカー")){
       wantPoint += 1;
     }
   }else if(tags.includes("よみたい")){
