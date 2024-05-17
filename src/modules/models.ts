@@ -7,6 +7,7 @@ import {Response} from 'express';
 
 
 const TAG_WANT = "よみたい";
+const NDL_SEARCH_URL = process.env.NDL_SEARCH_URL;
 
 
 export const fetchLibraries = async (fs:firestoreUtil.FirestoreTransaction) => {
@@ -265,4 +266,69 @@ export const findLibraryTag = async (isbn: string, fs:firestoreUtil.FirestoreTra
 export type GetWantTagParams = RequestParams & {
   isbn: string,
   user: string
+};
+
+type NewBookForm = {
+  documentId: string;
+  bookName: string;
+  isbn: string;
+  authorName: string;
+  publisherName: string;
+  newBookCheckFlg: number;
+  tags: string;
+  isAdd: boolean;
+  updateAt: number;
+}
+export const fetchNewBooks = async (fs:firestoreUtil.FirestoreTransaction):Promise<NewBookForm[]> => {
+  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_NEW_BOOK, "is_created_toread", "is_created_toread", "!=", true);
+
+  return result.map(resultRow => {
+    return {
+      documentId: resultRow.documentId,
+      bookName: resultRow.book_name,
+      isbn: resultRow.isbn,
+      authorName: resultRow.author_name,
+      publisherName: resultRow.publisher_name,
+      newBookCheckFlg: 1,
+      updateAt: resultRow.update_at.seconds,
+      tags: "",
+      isAdd: false
+    };;
+  });;
+};
+
+export type AddNewBooksParams = RequestParams & {
+  user:string; 
+  newBooks:NewBookForm[];
+};
+
+export const addNewBooks = async (params:AddNewBooksParams, fs:firestoreUtil.FirestoreTransaction) => {
+  const promises:Promise<void>[] = [];
+  for(const newBook of params.newBooks){
+    // 新刊のis_created_toreadをtrueにする
+    const document = {
+      is_created_toread: true,
+      update_at: Timestamp.fromDate(new Date()),
+      update_user: params.user
+    }
+    promises.push(fs.updateDocument(firestoreUtil.COLLECTION_PATH.T_NEW_BOOK, newBook.documentId, document));
+
+    // isAddついてるものだけtoreadに新規作成
+    if(!newBook.isAdd){continue;}
+    const isbn13 = newBook.isbn.length === 13 ? newBook.isbn : util.isbn10To13(newBook.isbn);
+    const bookParams:BookParams = {
+      ...newBook,
+      tags: newBook.tags.split(/[ 　\,\/]/).filter(tag => tag),
+      idToken: params.idToken,
+      user: params.user,
+      page: null,
+      memo: "",
+      coverUrl: `${NDL_SEARCH_URL}/thumbnail/${isbn13}.jpg`,
+      isExternalCooperation: false
+    };
+    promises.push(createToreadBook(bookParams, fs))
+  }
+  // 非同期で終わるまで待つ
+  const results = (await Promise.all(promises));
+  return;
 };

@@ -200,6 +200,51 @@ router.post("/toread/tag/want/get", wrapAsyncMiddleware(async (req, res) => {
   util.sendJson(res, 'OK', data);
 }));
 
+// 新刊一括追加 新刊データの取得
+router.post("/toread/newbooks/fetch", wrapAsyncMiddleware(async (req, res) => {
+  const params:models.RequestParams = req.body;
+  let isAuth = false;
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    isAuth = await authUtil.isAuth(params.idToken, fs);
+    //ログイン済みでなければログインエラー
+    validationUtil.isAuth(res, isAuth);
+
+    // 新刊データ一括取得
+    const newBooks = await models.fetchNewBooks(fs);
+    
+    return {newBooks};
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
+}));
+
+router.post("/toread/newbooks/add", wrapAsyncMiddleware(async (req, res) => {
+  const params:models.AddNewBooksParams = req.body;
+  let isAuth = false;
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    isAuth = await authUtil.isAuth(params.idToken, fs);
+    //ログイン済みでなければログインエラー
+    validationUtil.isAuth(res, isAuth);
+    //TODO:パラメータチェック
+    //TODO:ID存在チェック
+    //TODO:コンフリクトチェック
+
+    //作成するtoreadのISBN被りチェック
+    for await(const newBook of params.newBooks){
+      await validationUtil.isCreateUniqueIsbn(res, newBook.isbn, fs);
+    }
+
+    // 新刊一括登録
+    await models.addNewBooks(params, fs);
+    
+    return;
+  }, async (fs:firestoreUtil.FirestoreTransaction) => {
+    return await models.initToread(isAuth, fs);
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
+}))
+
 
 //routerをモジュールとして扱う準備
 module.exports = router;
