@@ -124,3 +124,6 @@ export const isbn10To13 = (isbn10:string):string => {
 export const isbn13To10 = (isbn13:string):string => {
   return isbn9To10(isbn13.substring(3, 12));
 };
+export const getNewBook = async (documentId:string, fs:firestoreUtil.FirestoreTransaction) => {
+  return await fs.getDocument(firestoreUtil.COLLECTION_PATH.T_NEW_BOOK, documentId);
+};

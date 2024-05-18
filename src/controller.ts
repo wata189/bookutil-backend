@@ -223,11 +223,14 @@ router.post("/toread/newbooks/add", wrapAsyncMiddleware(async (req, res) => {
   let isAuth = false;
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
     isAuth = await authUtil.isAuth(params.idToken, fs);
-    //ログイン済みでなければログインエラー
+    // ログイン済みでなければログインエラー
     validationUtil.isAuth(res, isAuth);
-    //TODO:パラメータチェック
-    //TODO:ID存在チェック
-    //TODO:コンフリクトチェック
+    // パラメータチェック
+    validationUtil.isValidAddNewBooksParams(res, params);
+    // ID存在チェック
+    validationUtil.isExistNewBooksId(res, params.newBooks, fs);
+    //コンフリクトチェック
+    validationUtil.isNotConflictNewBooks(res, params.newBooks, fs);
 
     //作成するtoreadのISBN被りチェック
     for await(const newBook of params.newBooks){

@@ -232,3 +232,62 @@ export const isNotConflictBooks = async (res:Response, books:models.SimpleBook[]
   }
   const results = (await Promise.all(promises));
 };
+
+
+export const isValidAddNewBooksParams = (res:Response, params:models.AddNewBooksParams) => {
+  try{
+    const validationCmds:ValidationCmd[] = [
+      {param: params.user, func: isExist}
+    ];
+
+    for(const newBook of params.newBooks){
+      const validationCmds:ValidationCmd[] = [
+        {param: newBook.bookName, func: isExist},
+        {param: newBook.newBookCheckFlg, func: isFlg}
+      ];
+    
+      if(isExist(newBook.isbn)){
+        validationCmds.push({param:newBook.isbn.toString(), func: isIsbn});
+      }
+      if(newBook.newBookCheckFlg === 1){
+        validationCmds.push({param:newBook.isbn, func: isExist});
+      }
+      validationCmds.push({param: newBook.documentId, func: isExist});
+      validationCmds.push({param: newBook.updateAt, func: isExist});
+      validationCmds.push({param: newBook.updateAt, func: isNumber});
+      validationCmds.push({param: newBook.isAdd, func: isFlg});
+    }
+
+    runValidationCmds(res, validationCmds);
+  }catch(e){
+    systemLogger.error(e);
+    errorUtil.throwError(res, "不正なパラメータがあります", util.STATUS_CODES.BAD_REQUEST);
+  }
+};
+
+//ID存在チェック
+export const isExistNewBooksId = async (res:Response, newBooks:models.NewBookForm[], fs:firestoreUtil.FirestoreTransaction) => {
+  const promises:Promise<FirebaseFirestore.DocumentData | undefined>[] = [];
+  for(const newBook of newBooks) {
+    promises.push(util.getNewBook(newBook.documentId, fs))
+  }
+
+  const documents = await Promise.all(promises);
+  for(const document of documents){
+    if(!isExist(document)){
+      errorUtil.throwError(res, "本が削除されています", util.STATUS_CODES.BAD_REQUEST);
+    }
+  }
+};
+
+//コンフリクトチェック
+export const isNotConflictNewBooks = async (res:Response, newBooks:models.NewBookForm[], fs:firestoreUtil.FirestoreTransaction) => {
+
+  for(const newBook of newBooks) {
+    const newBookDocument = await util.getNewBook(newBook.documentId, fs);
+    
+    if(!newBookDocument || newBookDocument.update_at.seconds !== newBook.updateAt ){
+      errorUtil.throwError(res, "本の情報が更新されています", util.STATUS_CODES.CONFLICT);
+    }
+  }
+};

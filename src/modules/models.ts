@@ -268,7 +268,7 @@ export type GetWantTagParams = RequestParams & {
   user: string
 };
 
-type NewBookForm = {
+export type NewBookForm = {
   documentId: string;
   bookName: string;
   isbn: string;
