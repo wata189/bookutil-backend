@@ -229,6 +229,8 @@ router.post("/toread/newbooks/add", wrapAsyncMiddleware(async (req, res) => {
     validationUtil.isValidAddNewBooksParams(res, params);
     // ID存在チェック
     validationUtil.isExistNewBooksId(res, params.newBooks, fs);
+    return;
+  }, async (fs:firestoreUtil.FirestoreTransaction) => {
     //コンフリクトチェック
     validationUtil.isNotConflictNewBooks(res, params.newBooks, fs);
 
