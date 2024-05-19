@@ -234,7 +234,9 @@ router.post("/toread/newbooks/add", wrapAsyncMiddleware(async (req, res) => {
 
     //作成するtoreadのISBN被りチェック
     for await(const newBook of params.newBooks){
-      await validationUtil.isCreateUniqueIsbn(res, newBook.isbn, fs);
+      if(newBook.isAdd){
+        await validationUtil.isCreateUniqueIsbn(res, newBook.isbn, fs);
+      }
     }
 
     // 新刊一括登録
