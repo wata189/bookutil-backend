@@ -42,7 +42,7 @@ export const fetchLibraries = async (fs:firestoreUtil.FirestoreTransaction) => {
 
 export const initToread = async (isAuth:boolean, fs:firestoreUtil.FirestoreTransaction) => {
   const toreadBooks = await fetchToreadBooks(isAuth, fs);
-  const toreadTags = await fetchToreadTags(isAuth, toreadBooks, fs);
+  const toreadTags = await fetchTags(isAuth, fs);;
 
   return {toreadBooks, toreadTags};
 };
@@ -331,4 +331,147 @@ export const addNewBooks = async (params:AddNewBooksParams, fs:firestoreUtil.Fir
   // 非同期で終わるまで待つ
   const results = (await Promise.all(promises));
   return;
+};
+
+export const initBookshelf = async (fs:firestoreUtil.FirestoreTransaction) => {
+  const bookshelfBooks:any = await fetchBookshelfBooks(fs);
+  const tags:string[] = await fetchTags(true, fs);
+
+  return {bookshelfBooks, tags};
+};
+
+type Content = {
+  authorName: string | null,
+  contentName: string,
+  rate: number
+};
+type BookshelfBook = {
+  documentId: string | null,
+  bookName: string,
+  isbn: string | null,
+  coverUrl: string,
+  authorName: string | null,
+  publisherName: string | null,
+  readDate: string | null,
+  updateAt: number | null,
+  tags: string[],
+  rate: number,
+  contents: Content[],
+  dispCoverUrl: string
+};
+export const fetchBookshelfBooks = async (fs:firestoreUtil.FirestoreTransaction) => {
+    const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK, "update_at");
+  
+    const books:BookshelfBook[] = result.map((resultRow) => {
+      return {
+        documentId: resultRow.documentId,
+        bookName: resultRow.book_name,
+        isbn: resultRow.isbn,
+        authorName: resultRow.author_name,
+        publisherName: resultRow.publisher_name,
+        coverUrl: resultRow.cover_url,
+        readDate: resultRow.read_date,
+        updateAt: resultRow.update_at.seconds,
+        tags: resultRow.tags,
+        rate: resultRow.rate,
+        contents: resultRow.contents.map((content:ContentDocument) => {
+          return {authorName: content.author_name, contentName: content.content_name, rate: content.rate}
+        }),
+        dispCoverUrl: ""
+      };
+    });
+    return books;
+};
+
+const fetchTags = async (isAuth:boolean, fs:firestoreUtil.FirestoreTransaction) => {
+  //未ログインの場合は表示用のタグリスト
+  if(!isAuth) return [TAG_WANT, "プログラミング", "アルゴリズム"];
+
+  //DBからタグ取得
+  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.M_TOREAD_TAG, "order_num");
+  const masterTags:string[] = result.map(resultRow => resultRow.tag);
+
+  // 図書館マスタから図書館タグを生成
+  const libraries = await fetchLibraries(fs);
+  const libraryTags:string[] = libraries.map(library => library.city + "図書館");
+
+  let bookTags:string[] = [];
+  // toreadTags
+  const toreadBooks = await fetchToreadBooks(isAuth, fs);
+  toreadBooks.forEach(book => bookTags = bookTags.concat(book.tags));
+  // bookshelfTags
+  const bookShelfBooks = await fetchBookshelfBooks(fs);
+  bookShelfBooks.forEach(book => bookTags = bookTags.concat(book.tags));
+
+  // 重複を削除
+  const allTags = masterTags.concat(libraryTags).concat(bookTags.sort());
+  return util.removeDuplicateElements(allTags);
+};
+
+export type BookshelfBookParams = BookshelfBook & RequestParams & {
+  user: string
+};
+export const createBookshelfBook = async (params:BookshelfBookParams, fs:firestoreUtil.FirestoreTransaction) => {
+  const document = bookshelfBookParamsToDocument(params);
+  document.create_user = params.user;
+  document.create_at = document.update_at;
+  await fs.createDocument(firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK, document);
+};
+
+export const updateBookshelfBook = async (params:BookshelfBookParams, fs:firestoreUtil.FirestoreTransaction) => {
+  const document = bookshelfBookParamsToDocument(params);
+  await fs.updateDocument(firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK, params.documentId || "", document);
+};
+
+type ContentDocument = {
+  author_name: string | null
+  content_name: string
+  rate: number
+}
+export type BookshelfBookDocument = {
+  book_name: string
+  isbn: string | null
+  author_name: string | null
+  publisher_name: string | null
+  cover_url: string | null
+  tags: string[]
+  read_date: string | null
+  rate: number
+  contents: ContentDocument[]
+  create_user?: string
+  create_at?: Timestamp 
+  update_user: string
+  update_at: Timestamp 
+}
+const bookshelfBookParamsToDocument = (params:BookshelfBookParams):BookshelfBookDocument => {
+  const contents:ContentDocument[] = params.contents.map(content => {
+    return {
+      author_name: content.authorName,
+      content_name: content.contentName,
+      rate: content.rate
+    }
+  })
+  return {
+    "book_name": params.bookName,
+    "isbn": params.isbn,
+    "author_name": params.authorName,
+    "publisher_name": params.publisherName,
+    "cover_url": params.coverUrl,
+    "tags": params.tags,
+    "read_date": params.readDate,
+    "rate": params.rate,
+    "contents": contents,
+    "update_user": params.user,
+    "update_at": Timestamp.fromDate(new Date())
+  };
+};
+
+export type SimpleBookshelfBookParams = RequestParams & {
+  user: string,
+  documentId: string,
+  updateAt: number
+}
+
+export const deleteBookshelfBook = async (params:SimpleBookshelfBookParams, fs:firestoreUtil.FirestoreTransaction) => {
+  await fs.deleteDocument(firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK, params.documentId);
 };

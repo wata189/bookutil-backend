@@ -38,6 +38,19 @@ export const isUrl = (val:string) => {
   const regex = /^https?:\/\//;
   return regex.test(val);
 };
+export const isInOfRange = (start:number, end:number) => {
+  return (val:number) => {
+    return start <= val && val <= end;
+  }
+};
+export const isDateStr = (val:string) => {
+  const regex = /^\d{4}\/\d{2}\/\d{2}/;
+  return regex.test(val);
+};
+export const isValidDate = (val:string) => {
+  const date = new Date(val);
+  return !isNaN(date.getDate());
+}
 
 type ValidationCmd = {
   param: any,
@@ -289,5 +302,116 @@ export const isNotConflictNewBooks = async (res:Response, newBooks:models.NewBoo
     if(!newBookDocument || newBookDocument.update_at.seconds !== newBook.updateAt ){
       errorUtil.throwError(res, "本の情報が更新されています", util.STATUS_CODES.CONFLICT);
     }
+  }
+};
+
+export const isValidBookshelfBook = (res:Response, params:models.BookshelfBookParams) => {
+  try{
+    const validationCmds:ValidationCmd[] = [
+      {param: params.bookName, func: isExist},
+      {param: params.user, func: isExist},
+      {param: params.rate, func: isExist},
+      {param: params.rate, func: Number.isInteger},
+      {param: params.rate, func: isInOfRange(0, 5)}
+    ];
+  
+    if(params.isbn && isExist(params.isbn)){
+      validationCmds.push({param:params.isbn.toString(), func: isIsbn})
+    }
+    if(isExist(params.coverUrl)){
+      validationCmds.push({param:params.coverUrl, func: isUrl});
+    }
+    if(params.readDate && isExist(params.readDate)){
+      validationCmds.push({param:params.readDate, func: isDateStr});
+      validationCmds.push({param:params.readDate, func: isValidDate});
+    }
+    for(const content of params.contents){
+      validationCmds.push({param:content.contentName, func: isExist});
+      validationCmds.push({param:content.rate, func: isExist});
+      validationCmds.push({param:content.rate, func: Number.isInteger});
+      validationCmds.push({param:content.rate, func: isInOfRange(0, 5)});
+
+    }
+
+    runValidationCmds(res, validationCmds);
+  }catch(e){
+    systemLogger.error(e);
+    errorUtil.throwError(res, "不正なパラメータがあります", util.STATUS_CODES.BAD_REQUEST);
+  }
+};
+export const isValidUpdateBookshelfBook = (res:Response, params:models.BookshelfBookParams) => {
+
+  try{
+    const validationCmds:ValidationCmd[] = [
+      {param: params.documentId, func: isExist},
+      {param: params.updateAt, func: isExist},
+      {param: params.updateAt, func: isNumber}
+    ];
+
+    runValidationCmds(res, validationCmds);
+  }catch(e){
+    systemLogger.error(e);
+    errorUtil.throwError(res, "不正なパラメータがあります", util.STATUS_CODES.BAD_REQUEST);
+  }
+
+};
+//ISBN被りチェック　新規作成
+export const isCreateUniqueBookshelfIsbn = async (res:Response, isbn:string|null, fs:firestoreUtil.FirestoreTransaction) => {
+  // isbn空の場合は問題なし
+  if(!isbn || !isExist(isbn)) return;
+
+  const isbn10 = isbn.length === 10 ? isbn : util.isbn13To10(isbn);
+  const isbn13 = isbn.length === 13 ? isbn : util.isbn10To13(isbn);
+
+  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK, "isbn", "isbn", "in", [isbn10, isbn13]);
+  if(result.length > 0){
+    errorUtil.throwError(res, "同じISBNの本があります", util.STATUS_CODES.BAD_REQUEST);
+  }
+};
+
+//ISBN被りチェック　更新
+export const isUpdateUniqueBookshelfIsbn = async (res:Response, documentId:string, isbn:string|null, fs:firestoreUtil.FirestoreTransaction) => {
+  //isbn空の場合は問題ない
+  if(!isbn || !isExist(isbn)) return;
+
+  const isbn10 = isbn.length === 10 ? isbn : util.isbn13To10(isbn);
+  const isbn13 = isbn.length === 13 ? isbn : util.isbn10To13(isbn);
+  
+  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK, "isbn", "isbn", "in", [isbn10, isbn13]);
+  const sameIsbnBook = result.find(resultRow => resultRow.documentId !== documentId);
+  if(sameIsbnBook){
+    errorUtil.throwError(res, "同じISBNの本があります", util.STATUS_CODES.BAD_REQUEST);
+  }
+};
+
+//ID存在チェック
+export const isExistBookshelfBookId = async (res:Response, documentId:string, fs:firestoreUtil.FirestoreTransaction) => {
+  const book = await util.getBookshelfBook(documentId, fs);
+  if(!isExist(book)){
+    errorUtil.throwError(res, "本が削除されています", util.STATUS_CODES.BAD_REQUEST);
+  }
+};
+
+//コンフリクトチェック
+export const isNotConflictBookshelfBook = async (res:Response, documentId:string, updateAt:number|null, fs:firestoreUtil.FirestoreTransaction) => {
+  const book = await util.getBookshelfBook(documentId, fs);
+  if(!book || book.update_at.seconds !== updateAt ){
+    errorUtil.throwError(res, "本の情報が更新されています", util.STATUS_CODES.CONFLICT);
+  }
+};
+
+export const isValidSimpleBookshelfBook = async (res:Response, params:models.SimpleBookshelfBookParams) => {
+  try{
+    const validationCmds:ValidationCmd[] = [
+      {param: params.documentId, func: isExist},
+      {param: params.updateAt, func: isExist},
+      {param: params.updateAt, func: isNumber},
+      {param: params.user, func: isExist}
+    ];
+
+    runValidationCmds(res, validationCmds);
+  }catch(e){
+    systemLogger.error(e);
+    errorUtil.throwError(res, "不正なパラメータがあります", util.STATUS_CODES.BAD_REQUEST);
   }
 };

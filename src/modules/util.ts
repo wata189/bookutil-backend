@@ -45,6 +45,9 @@ export const isIsbn = (isbn:string) => {
 export const getToreadBook = async (documentId:string, fs:firestoreUtil.FirestoreTransaction) => {
   return await fs.getDocument(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, documentId);
 };
+export const getBookshelfBook = async (documentId:string, fs:firestoreUtil.FirestoreTransaction) => {
+  return await fs.getDocument(firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK, documentId);
+};
 
 export const formatDateToStr = (date: Date, format: string) => {
   const symbol = {

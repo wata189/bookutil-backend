@@ -246,8 +246,101 @@ router.post("/toread/newbooks/add", wrapAsyncMiddleware(async (req, res) => {
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
-}))
+}));
 
+//Bookshelf初期処理
+router.post("/bookshelf/init", wrapAsyncMiddleware(async (req, res) => {
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    const isAuth = await authUtil.isAuth(req.body.idToken?.toString(), fs);
+    // ログイン済みでなければログインエラー
+    validationUtil.isAuth(res, isAuth);
+  
+    return await models.initBookshelf(fs);
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
+}));
+
+router.post("/bookshelf/create", wrapAsyncMiddleware(async (req, res) => {
+  const params:models.BookshelfBookParams = req.body;
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+
+    const isAuth = await authUtil.isAuth(params.idToken, fs);
+    //ログイン済みでも外部連携でもなければログインエラー
+    validationUtil.isAuth(res, isAuth);
+    //パラメータチェック
+    validationUtil.isValidBookshelfBook(res, params);
+    //ISBN被りチェック
+    await validationUtil.isCreateUniqueBookshelfIsbn(res, params.isbn, fs);
+
+    //DBに格納
+    await models.createBookshelfBook(params, fs);
+    return;
+  },async (fs:firestoreUtil.FirestoreTransaction) => {
+    return await models.initBookshelf(fs);
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
+}));
+
+//Bookshelf更新
+router.post("/bookshelf/update", wrapAsyncMiddleware(async (req, res) => {
+  const params:models.BookshelfBookParams = req.body;
+  const documentId = params.documentId || "";
+  let isAuth = false;
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+
+    isAuth = await authUtil.isAuth(params.idToken, fs);
+    //ログイン済みでなければログインエラー
+    validationUtil.isAuth(res, isAuth);
+    //パラメータチェック
+    validationUtil.isValidBookshelfBook(res, params);
+    //form情報以外のパラメータチェック
+    validationUtil.isValidUpdateBookshelfBook(res, params);
+    //ID存在チェック
+    await validationUtil.isExistBookshelfBookId(res, documentId, fs);
+    //ISBN被りチェック
+    await validationUtil.isUpdateUniqueBookshelfIsbn(res, documentId, params.isbn, fs);
+    //コンフリクトチェック
+    await validationUtil.isNotConflictBookshelfBook(res, documentId, params.updateAt, fs);
+
+    //DB更新
+    await models.updateBookshelfBook(params, fs);
+    return;
+  }, async (fs:firestoreUtil.FirestoreTransaction) => {
+    return await models.initBookshelf(fs);
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
+}));
+
+//Bookshelf削除
+router.post("/bookshelf/delete", wrapAsyncMiddleware(async (req, res) => {
+  const params:models.SimpleBookshelfBookParams = req.body;
+  let isAuth = false;
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+
+    isAuth = await authUtil.isAuth(params.idToken, fs);
+    //ログイン済みでなければログインエラー
+    validationUtil.isAuth(res, isAuth);
+    //パラメータチェック
+    validationUtil.isValidSimpleBookshelfBook(res, params);
+    //ID存在チェック
+    await validationUtil.isExistBookshelfBookId(res, params.documentId, fs);
+    //コンフリクトチェック
+    await validationUtil.isNotConflictBookshelfBook(res, params.documentId, params.updateAt, fs);
+
+
+    //DBで削除
+    await models.deleteBookshelfBook(params, fs);
+
+    return;
+  }, async (fs:firestoreUtil.FirestoreTransaction) => {
+    return await models.initBookshelf(fs);
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
+}));
 
 //routerをモジュールとして扱う準備
 module.exports = router;
