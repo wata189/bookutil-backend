@@ -228,11 +228,9 @@ router.post("/toread/newbooks/add", wrapAsyncMiddleware(async (req, res) => {
     // パラメータチェック
     validationUtil.isValidAddNewBooksParams(res, params);
     // ID存在チェック
-    validationUtil.isExistNewBooksId(res, params.newBooks, fs);
-    return;
-  }, async (fs:firestoreUtil.FirestoreTransaction) => {
+    await validationUtil.isExistNewBooksId(res, params.newBooks, fs);
     //コンフリクトチェック
-    validationUtil.isNotConflictNewBooks(res, params.newBooks, fs);
+    await validationUtil.isNotConflictNewBooks(res, params.newBooks, fs);
 
     //作成するtoreadのISBN被りチェック
     for await(const newBook of params.newBooks){
