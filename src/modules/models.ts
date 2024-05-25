@@ -103,27 +103,6 @@ export const fetchToreadBooks = async (isAuth:boolean, fs:firestoreUtil.Firestor
   });
 };
 
-const fetchToreadTags = async (isAuth:boolean, toreadBooks:ToreadBook[], fs:firestoreUtil.FirestoreTransaction) => {
-  //未ログインの場合は表示用のタグリスト
-  if(!isAuth) return [TAG_WANT, "プログラミング", "アルゴリズム"];
-
-  //DBからタグ取得
-  const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.M_TOREAD_TAG, "order_num");
-  const masterTags:string[] = result.map(resultRow => resultRow.tag);
-
-  // 図書館マスタから図書館タグを生成
-  const libraries = await fetchLibraries(fs);
-  const libraryTags:string[] = libraries.map(library => library.city + "図書館");
-
-  // toreadTags
-  let toreadTags:string[] = [];
-  toreadBooks.forEach(book => toreadTags = toreadTags.concat(book.tags));
-
-  // 重複を削除
-  const allTags = masterTags.concat(libraryTags).concat(toreadTags.sort());
-  return util.removeDuplicateElements(allTags);
-};
-
 export type RequestParams = {
   idToken: string | null
 }
@@ -384,7 +363,7 @@ export const fetchBookshelfBooks = async (fs:firestoreUtil.FirestoreTransaction)
 };
 
 const fetchTags = async (isAuth:boolean, fs:firestoreUtil.FirestoreTransaction) => {
-  //未ログインの場合は表示用のタグリスト
+  //未ログインの場合は表示用のタグリスト適当に返却
   if(!isAuth) return [TAG_WANT, "プログラミング", "アルゴリズム"];
 
   //DBからタグ取得
@@ -396,16 +375,29 @@ const fetchTags = async (isAuth:boolean, fs:firestoreUtil.FirestoreTransaction) 
   const libraryTags:string[] = libraries.map(library => library.city + "図書館");
 
   let bookTags:string[] = [];
+  // TODO: タグマスタにignoreTagsのフラグも入れる？
+  const ignoreTags = [...libraryTags, "よんでいる", "よみたい", "かいたい", "ブックウォーカー", "キンドルアンリミテッド", "無料", "図書館未定"];
   // toreadTags
   const toreadBooks = await fetchToreadBooks(isAuth, fs);
-  toreadBooks.forEach(book => bookTags = bookTags.concat(book.tags));
+  toreadBooks.forEach(book => {
+    bookTags.push(book.tags.filter(tag => !ignoreTags.includes(tag)) // 本自体の性質に結びつかないタグは除去
+      .sort((a, b) => a.length - b.length) // 適当にソートする a-bが0がありうるのでその部分で順序を保証する
+      .join("/")
+    );
+  });
   // bookshelfTags
   const bookShelfBooks = await fetchBookshelfBooks(fs);
-  bookShelfBooks.forEach(book => bookTags = bookTags.concat(book.tags));
+  bookShelfBooks.forEach(book => {
+    bookTags.push(book.tags.filter(tag => !ignoreTags.includes(tag)) 
+      .sort((a, b) => a.length - b.length)
+      .join("/")
+    );
+  });
 
   // 重複を削除
   const allTags = masterTags.concat(libraryTags).concat(bookTags.sort());
-  return util.removeDuplicateElements(allTags);
+  return util.removeDuplicateElements(allTags).filter(tag => tag); // 空文字は除外
+  
 };
 
 export type BookshelfBookParams = BookshelfBook & RequestParams & {
