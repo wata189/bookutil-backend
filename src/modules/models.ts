@@ -40,13 +40,6 @@ export const fetchLibraries = async (fs:firestoreUtil.FirestoreTransaction) => {
   });
 };
 
-export const initToread = async (isAuth:boolean, fs:firestoreUtil.FirestoreTransaction) => {
-  const toreadBooks = await fetchToreadBooks(isAuth, fs);
-  const toreadTags = await fetchTags(isAuth, fs);;
-
-  return {toreadBooks, toreadTags};
-};
-
 export type ToreadBook = {
   documentId: string
   bookName: string
@@ -312,13 +305,6 @@ export const addNewBooks = async (params:AddNewBooksParams, fs:firestoreUtil.Fir
   return;
 };
 
-export const initBookshelf = async (fs:firestoreUtil.FirestoreTransaction) => {
-  const bookshelfBooks:any = await fetchBookshelfBooks(fs);
-  const tags:string[] = await fetchTags(true, fs);
-
-  return {bookshelfBooks, tags};
-};
-
 type Content = {
   authorName: string | null,
   contentName: string,
@@ -362,7 +348,7 @@ export const fetchBookshelfBooks = async (fs:firestoreUtil.FirestoreTransaction)
     return books;
 };
 
-const fetchTags = async (isAuth:boolean, fs:firestoreUtil.FirestoreTransaction) => {
+export const fetchTags = async (isAuth:boolean, fs:firestoreUtil.FirestoreTransaction) => {
   //未ログインの場合は表示用のタグリスト適当に返却
   if(!isAuth) return [TAG_WANT, "プログラミング", "アルゴリズム"];
 

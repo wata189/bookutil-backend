@@ -36,11 +36,23 @@ router.post('/libraries/fetch', wrapAsyncMiddleware(async (req, res) => {
 }));
 
 //Toread初期処理
-router.post("/toread/init", wrapAsyncMiddleware(async (req, res) => {
+router.post("/toread/fetch", wrapAsyncMiddleware(async (req, res) => {
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
     const isAuth = await authUtil.isAuth(req.body.idToken?.toString(), fs);
   
-    return await models.initToread(isAuth, fs);
+    const toreadBooks = await models.fetchToreadBooks(isAuth, fs);
+    return {toreadBooks};
+  }]);
+  res.status(util.STATUS_CODES.OK);
+  util.sendJson(res, 'OK', data);
+}));
+
+router.post("/tag/fetch", wrapAsyncMiddleware(async (req, res) => {
+  const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
+    const isAuth = await authUtil.isAuth(req.body.idToken?.toString(), fs);
+  
+    const tags = await models.fetchTags(isAuth, fs);
+    return {tags};
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
@@ -64,7 +76,8 @@ router.post("/toread/create", wrapAsyncMiddleware(async (req, res) => {
     await models.createToreadBook(params, fs);
     return;
   },async (fs:firestoreUtil.FirestoreTransaction) => {
-    return await models.initToread(isAuth, fs);
+    const toreadBooks = await models.fetchToreadBooks(isAuth, fs);
+    return {toreadBooks};
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
@@ -95,7 +108,8 @@ router.post("/toread/update", wrapAsyncMiddleware(async (req, res) => {
     await models.updateToreadBook(documentId, params, fs);
     return;
   }, async (fs:firestoreUtil.FirestoreTransaction) => {
-    return await models.initToread(isAuth, fs);
+    const toreadBooks = await models.fetchToreadBooks(isAuth, fs);
+    return {toreadBooks};
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
@@ -122,7 +136,8 @@ router.post("/toread/delete", wrapAsyncMiddleware(async (req, res) => {
 
     return;
   }, async (fs:firestoreUtil.FirestoreTransaction) => {
-    return await models.initToread(isAuth, fs);
+    const toreadBooks = await models.fetchToreadBooks(isAuth, fs);
+    return {toreadBooks};
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
@@ -150,7 +165,8 @@ router.post("/toread/tag/add", wrapAsyncMiddleware(async (req, res) => {
 
     return;
   }, async (fs:firestoreUtil.FirestoreTransaction) => {
-    return await models.initToread(isAuth, fs);
+    const toreadBooks = await models.fetchToreadBooks(isAuth, fs);
+    return {toreadBooks};
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
@@ -174,7 +190,8 @@ router.post("/toread/tag/want/add", wrapAsyncMiddleware(async (req, res) => {
     await models.addWantTag(res, params, fs);
     return;
   }, async (fs:firestoreUtil.FirestoreTransaction) => {
-    return await models.initToread(isAuth, fs);
+    const toreadBooks = await models.fetchToreadBooks(isAuth, fs);
+    return {toreadBooks};
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
@@ -244,20 +261,22 @@ router.post("/toread/newbooks/add", wrapAsyncMiddleware(async (req, res) => {
     
     return;
   }, async (fs:firestoreUtil.FirestoreTransaction) => {
-    return await models.initToread(isAuth, fs);
+    const toreadBooks = await models.fetchToreadBooks(isAuth, fs);
+    return {toreadBooks};
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
 }));
 
 //Bookshelf初期処理
-router.post("/bookshelf/init", wrapAsyncMiddleware(async (req, res) => {
+router.post("/bookshelf/fetch", wrapAsyncMiddleware(async (req, res) => {
   const data:Object = await firestoreUtil.tran([async (fs:firestoreUtil.FirestoreTransaction) => {
     const isAuth = await authUtil.isAuth(req.body.idToken?.toString(), fs);
     // ログイン済みでなければログインエラー
     validationUtil.isAuth(res, isAuth);
   
-    return await models.initBookshelf(fs);
+    const bookshelfBooks = await models.fetchBookshelfBooks(fs);
+    return {bookshelfBooks};
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
@@ -279,7 +298,8 @@ router.post("/bookshelf/create", wrapAsyncMiddleware(async (req, res) => {
     await models.createBookshelfBook(params, fs);
     return;
   },async (fs:firestoreUtil.FirestoreTransaction) => {
-    return await models.initBookshelf(fs);
+    const bookshelfBooks = await models.fetchBookshelfBooks(fs);
+    return {bookshelfBooks};
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
@@ -310,7 +330,8 @@ router.post("/bookshelf/update", wrapAsyncMiddleware(async (req, res) => {
     await models.updateBookshelfBook(params, fs);
     return;
   }, async (fs:firestoreUtil.FirestoreTransaction) => {
-    return await models.initBookshelf(fs);
+    const bookshelfBooks = await models.fetchBookshelfBooks(fs);
+    return {bookshelfBooks};
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
@@ -338,7 +359,8 @@ router.post("/bookshelf/delete", wrapAsyncMiddleware(async (req, res) => {
 
     return;
   }, async (fs:firestoreUtil.FirestoreTransaction) => {
-    return await models.initBookshelf(fs);
+    const bookshelfBooks = await models.fetchBookshelfBooks(fs);
+    return {bookshelfBooks};
   }]);
   res.status(util.STATUS_CODES.OK);
   util.sendJson(res, 'OK', data);
