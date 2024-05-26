@@ -6,8 +6,6 @@
   "scripts": {
     "-------↓開発環境----": "",
     "dev": "npm run test && npx env-cmd -f .env.dev ts-node-dev --respawn src/app.ts",
-    "build": "npm-run-all clean tsc",
-    "runLocalDocker": "npm run createDockerImage && docker container run --rm -p 8080:8080 --init --name bookutilapi bookutilapi",
     "-------↓ローカルfirestore----": "",
     "devFirestore": "firebase emulators:start --import=emulator_data --export-on-exit",
     "------↓バッチ実行----": "",
@@ -23,6 +21,8 @@
     "test": "npx env-cmd -f .env.dev npx jest",
     "clean": "rimraf dist",
     "tsc": "tsc",
+    "build": "npm-run-all clean tsc",
+    "runLocalDocker": "npm run createDockerImage && docker container run --rm -p 8080:8080 --init --name bookutilapi bookutilapi",
     "createDockerImage": "npm run test && docker build --file=Dockerfile_api -t bookutilapi .",
     "createDockerImageCheckLibrary": "npm run test && docker build --file=Dockerfile_checkLibrary -t bookutilchecklibrary .",
     "createDockerImageAlertNewBook": "npm run test && docker build --file=Dockerfile_alertNewBook -t bookutilalertnewbook .",
