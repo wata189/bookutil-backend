@@ -1,25 +1,13 @@
-import * as models from "../modules/models";
-import * as firestoreUtil from "../modules/firestoreUtil";
-
 console.log("start sandbox.ts");
+import * as models from "../modules/models";
+import * as fs from 'fs';
+import path from 'path';
+import * as util from "../modules/util";
+import * as ndlSearchUtil from "../modules/ndlSearchUtil";
 
-const isbns = [
-  "4326101202",// 足立区のはず
-  "4535558965",// 荒川区のはず
-  "4829163054", // 国会図書館のはず
-  "4253282571", // nullのはず
-];
-
-
-
-firestoreUtil.tran([ async (fs:firestoreUtil.FirestoreTransaction) => {
-  for(const isbn of isbns){
-    const tag = await models.findLibraryTag(isbn, fs);
-    console.log(tag);
-  }
-}]);
-
-
+import params from "C:\\workspace\\bookutil-backend\\src\\batch\\data\\bookshelfBookParams_1716792231814.json";
+const bookshelfBookParamses:models.BookshelfBookParams[] = params;
+console.log(bookshelfBookParamses.length + 86);
 
 
 console.log("end sandbox.ts");

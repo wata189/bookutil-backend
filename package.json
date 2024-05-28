@@ -11,8 +11,9 @@
     "------↓バッチ実行----": "",
     "deleteTag": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/deleteTag.js ずんだもん",
     "------↓バッチ開発----": "",
-    "devBatch": "npm run test && npm run build && npx env-cmd -f .env.dev node dist/batch/crawlAmazonBook.js",
-    "prodBatch": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/hoge.js",
+    "sandbox": "npm run build && npx env-cmd -f .env.dev node dist/batch/sandbox.js",
+    "devBatch": "npm run test && npm run build && npx env-cmd -f .env.dev node dist/batch/insertTBookshelfBook.js",
+    "prodBatch": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/insertTBookshelfBook.js",
     "------↓CloudRunデプロイ------": "",
     "deployApi": "npm-run-all createDockerImage setTagToDockerImage pushDockerImage deployCloudRun",
     "deployCheckLibrary": "npm-run-all createDockerImageCheckLibrary setTagToDockerImageCheckLibrary pushDockerImageCheckLibrary deployCloudRunCheckLibrary",
@@ -67,7 +68,8 @@
     "puppeteer": "^22.9.0",
     "ts-jest": "^29.1.1",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "firebase-tools": "^12.4.7"

@@ -17,32 +17,30 @@ type Booklog = {
   publisherName: string,
   coverUrl: string
 };
-import booklogJson from "C:/workspace/bookutil-backend/src/batch/data/booklog_1716567731518.json"
+import booklogJson from "C:/workspace/bookutil-backend/src/batch/data/booklog_1716783779732.json";
 const booklogs:Booklog[] = booklogJson;
 
+console.log(booklogs.filter(b => !util.isIsbn(b.isbn) && !b.coverUrl).length);
 
 const main = async () => {
   console.log("start")
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
+  page.setDefaultNavigationTimeout(0); 
 
-  let count = 0;
-  for(const booklog of booklogs){
-    if(util.isIsbn(booklog.isbn)){continue;} // ISBNあったらスクレイピングしなくていい
-    if(booklog.bookName.includes("[雑誌]")){continue;}
-    if(booklog.bookName.includes("UOMO(ウオモ)")){continue;}
-    if(booklog.coverUrl){continue;} // 書影あったらスクレイピングしないでいい
+  const start = 2000
+  for(let i = start; i < start + 500; i++) {
+    const booklog = booklogs[i];
+    if(util.isIsbn(booklog.isbn)){continue;}
+    if(booklog.coverUrl){continue;}
   
     // amazonのページスクレイピング
     const url = AMZN_URL + booklog.itemId;
     await page.goto(url);
-    await util.wait(5);
     const paperBookDiv = await page.$('#tmm-grid-swatch-OTHER');
     if(!paperBookDiv)continue;
-    await util.wait(5);
     const btn = await paperBookDiv.$("a"); // aタグ取得
     if(!btn)continue;
-    await util.wait(5);
     const href = await btn.evaluate(node => node.href);
     if(!href)continue;
     console.log(booklog.bookName);
@@ -51,18 +49,14 @@ const main = async () => {
     if(isbn){
       booklog.isbn = isbn;
       console.log(`ISBN get! ${isbn}`)
-
-      count++
-      // ちょっとずつisbnとる
-      if(count >= 70){
-        break;
-      }
     }
   }
   
   // json出力
   fs.writeFileSync( path.join("src", "batch", "data", `booklog_${(new Date().getTime())}.json`), JSON.stringify(booklogs));
 
-  console.log("end")
 }
-main();
+main().then(() => {
+  console.log("end");
+  process.exit();
+});

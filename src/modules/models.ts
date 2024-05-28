@@ -401,7 +401,7 @@ export const updateBookshelfBook = async (params:BookshelfBookParams, fs:firesto
   await fs.updateDocument(firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK, params.documentId || "", document);
 };
 
-type ContentDocument = {
+export type ContentDocument = {
   author_name: string | null
   content_name: string
   rate: number
