@@ -14,14 +14,6 @@ export const fetchLibraries = async (fs:firestoreUtil.FirestoreTransaction) => {
   const result = await fs.getCollection(firestoreUtil.COLLECTION_PATH.M_LIBRARY, "order_num");
 
   return result.map((resultRow) => {
-    const businessHours = resultRow.business_hours.map((hour:any) => {
-      return {
-        dayOfWeek: hour.day_of_week,
-        isOpen: hour.is_open,
-        startTime: hour.start_time,
-        endTime: hour.end_time
-      }
-    })
     return {
       id: resultRow.id,
       city: resultRow.city,
@@ -31,8 +23,7 @@ export const fetchLibraries = async (fs:firestoreUtil.FirestoreTransaction) => {
       mapUrl: resultRow.map_url,
       newBookCheckFlg: resultRow.new_book_check_flg,
       orderNum: resultRow.order_num,
-      businessHours,
-
+      
       spUrl: resultRow.sp_url,
       calendarUrl: resultRow.calendar_url,
       barcodeUrl: resultRow.barcode_url
