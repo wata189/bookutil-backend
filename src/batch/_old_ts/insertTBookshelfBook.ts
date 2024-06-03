@@ -1,6 +1,6 @@
-import * as firestoreUtil from "../modules/firestoreUtil";
-import * as models from "../modules/models";
-import * as util from "../modules/util";
+import * as firestoreUtil from "../../modules/firestoreUtil";
+import * as models from "../../modules/models";
+import * as util from "../../modules/util";
 import * as fs from 'fs';
 import path from 'path';
 

@@ -1,6 +1,6 @@
 
-import * as firestoreUtil from "../modules/firestoreUtil";
-import * as models from "../modules/models";
+import * as firestoreUtil from "../../modules/firestoreUtil";
+import * as models from "../../modules/models";
 import mLibraries from './dbdata/bookutil.m_library.json';
 import mLibraryBusinessHours from './dbdata/bookutil.m_library_business_hours.json';
 

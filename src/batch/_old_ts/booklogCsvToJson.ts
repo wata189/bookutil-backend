@@ -2,7 +2,7 @@
 import * as fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import path from 'path';
-import * as util from "../modules/util";
+import * as util from "../../modules/util";
 
 
 const csvFilePath = "C:\\workspace\\bookutil-backend\\src\\batch\\base_booklog.csv";

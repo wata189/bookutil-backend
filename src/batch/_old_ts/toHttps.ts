@@ -1,5 +1,5 @@
 
-import * as firestoreUtil from "../modules/firestoreUtil";
+import * as firestoreUtil from "../../modules/firestoreUtil";
 import { Timestamp } from "firebase-admin/firestore";
 
 console.log("start toHttps")

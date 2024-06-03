@@ -1,5 +1,5 @@
 
-import * as firestoreUtil from "../modules/firestoreUtil";
+import * as firestoreUtil from "../../modules/firestoreUtil";
 import mToreadTag from './dbdata/bookutil.m_toread_tag.json';
 
 console.log("start insertMToreadTag")

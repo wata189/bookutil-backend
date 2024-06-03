@@ -2,7 +2,7 @@
 import puppeteer from "puppeteer";
 import * as fs from 'fs';
 import path from 'path';
-import * as util from "../modules/util";
+import * as util from "../../modules/util";
 
 const AMZN_URL = "https://www.amazon.co.jp/dp/";
 type Booklog = {
