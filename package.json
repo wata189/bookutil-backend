@@ -13,7 +13,7 @@
     "------↓バッチ開発----": "",
     "sandbox": "npm run build && npx env-cmd -f .env.dev node dist/batch/sandbox.js",
     "devBatch": "npm run test && npm run build && npx env-cmd -f .env.dev node dist/batch/insertTBookshelfBook.js",
-    "prodBatch": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/insertTBookshelfBook.js",
+    "prodBatch": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/hoge.js",
     "------↓CloudRunデプロイ------": "",
     "deployApi": "npm-run-all createDockerImage setTagToDockerImage pushDockerImage deployCloudRun",
     "deployCheckLibrary": "npm-run-all createDockerImageCheckLibrary setTagToDockerImageCheckLibrary pushDockerImageCheckLibrary deployCloudRunCheckLibrary",

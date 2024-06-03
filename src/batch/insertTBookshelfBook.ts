@@ -7,11 +7,11 @@ import path from 'path';
 
 console.log("start insert t_bookshelf_book")
 
-import paramses from "C:\\workspace\\bookutil-backend\\src\\batch\\data\\unsendBookshelfBookParams_1716863698149.json";
+import paramses from "C:\\workspace\\bookutil-backend\\src\\batch\\data\\bookshelfBookParams_1716792231814.json";
 const bookshelfBookParamses:models.BookshelfBookParams[] = paramses;
-// const count = 500;
-// const sendParamses = bookshelfBookParamses.slice(0, count);
-// const unsendParamses = bookshelfBookParamses.slice(count);
+const count = 500;
+const sendParamses = bookshelfBookParamses.slice(0, count);
+const unsendParamses = bookshelfBookParamses.slice(count);
 
 const main = async () => {
   await firestoreUtil.tran([ async (fs:firestoreUtil.FirestoreTransaction) => {
@@ -22,7 +22,7 @@ const main = async () => {
     }
 
 
-    const promises = bookshelfBookParamses.map(bookshelfBookParams => {
+    const promises = sendParamses.map(bookshelfBookParams => {
       return models.createBookshelfBook(bookshelfBookParams, fs);
     })
 
