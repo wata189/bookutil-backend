@@ -19,8 +19,8 @@ import * as firestoreUtil from "../modules/firestoreUtil";
 
 const at = (new Date());
 firestoreUtil.tran([ async (fs:firestoreUtil.FirestoreTransaction) => {
-  const bookDocuments = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "isbn", "tags", "array-contains", deleteTag);
-  const updateBooks = bookDocuments.map((document) => {
+  const toreadBookDocuments = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, "isbn", "tags", "array-contains", deleteTag);
+  const updateToreadBooks = toreadBookDocuments.map((document) => {
     console.log(document.book_name);
     const tags:string[] = document.tags;
     return {
@@ -31,13 +31,29 @@ firestoreUtil.tran([ async (fs:firestoreUtil.FirestoreTransaction) => {
         update_at: at,
       }
     }
-  })
+  });
+  const bookshelfBookDocuments = await fs.getCollection(firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK, "isbn", "tags", "array-contains", deleteTag);
+  const updateBookshelfBooks = bookshelfBookDocuments.map((document) => {
+    console.log(document.book_name);
+    const tags:string[] = document.tags;
+    return {
+      documentId: document.documentId,
+      document: {
+        tags: tags.filter(tag => tag !== deleteTag),
+        update_user: "batch",
+        update_at: at,
+      }
+    }
+  });
 
   const promises:Promise<void>[] = [];
-  updateBooks.forEach((book) => {
+  updateToreadBooks.forEach((book) => {
     promises.push(fs.updateDocument(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, book.documentId, book.document)) ;
-  })
+  });
+  updateBookshelfBooks.forEach((book) => {
+    promises.push(fs.updateDocument(firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK, book.documentId, book.document)) ;
+  });
   const results = (await Promise.all(promises));
 
-  console.log("end insertMLibrary")
+  console.log("end deleteTag")
 }]);
