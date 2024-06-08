@@ -353,21 +353,19 @@ export const fetchTags = async (isAuth:boolean, fs:firestoreUtil.FirestoreTransa
 
   let bookTags:string[] = [];
   // TODO: タグマスタにignoreTagsのフラグも入れる？
-  const ignoreTags = [...libraryTags, "よんでいる", "よみたい", "かいたい", "ブックウォーカー", "キンドルアンリミテッド", "無料", "図書館未定"];
+  const ignoreTags = [...libraryTags, "よんでいる", "よみたい", "かいたい", "ブックウォーカー", "キンドルアンリミテッド", "無料", "図書館未定", "青空文庫"];
   // toreadTags
   const toreadBooks = await fetchToreadBooks(isAuth, fs);
   toreadBooks.forEach(book => {
     bookTags.push(book.tags.filter(tag => !ignoreTags.includes(tag)) // 本自体の性質に結びつかないタグは除去
-      .sort((a, b) => a.length - b.length) // 適当にソートする a-bが0がありうるのでその部分で順序を保証する
-      .join("/")
+      .sort().join("/") // 適当にソートする
     );
   });
   // bookshelfTags
   const bookShelfBooks = await fetchBookshelfBooks(fs);
   bookShelfBooks.forEach(book => {
     bookTags.push(book.tags.filter(tag => !ignoreTags.includes(tag)) 
-      .sort((a, b) => a.length - b.length)
-      .join("/")
+      .sort().join("/")
     );
   });
 
