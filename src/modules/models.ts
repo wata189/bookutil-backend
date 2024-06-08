@@ -23,7 +23,7 @@ export const fetchLibraries = async (fs:firestoreUtil.FirestoreTransaction) => {
       mapUrl: resultRow.map_url,
       newBookCheckFlg: resultRow.new_book_check_flg,
       orderNum: resultRow.order_num,
-      
+
       spUrl: resultRow.sp_url,
       calendarUrl: resultRow.calendar_url,
       barcodeUrl: resultRow.barcode_url
@@ -50,8 +50,8 @@ const calcWantPoint = (tags:string[]):number => {
   let wantPoint = 0;
   if(tags.includes("よんでいる")){
     wantPoint = 2;
-    // ブックウォーカーは若干優先
-    if(tags.includes("ブックウォーカー")){
+    // ブックウォーカー・無料は若干優先
+    if(tags.includes("ブックウォーカー") || tags.includes("無料")){
       wantPoint += 1;
     }
   }else if(tags.includes("よみたい")){
