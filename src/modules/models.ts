@@ -45,15 +45,17 @@ export type ToreadBook = {
   tags: string[]
 }
 
-// よみたいポイントの算出　ブックウォーカーよんでいる＞よんでいる＞よみたい＞その他
+// よみたいポイントの算出　ブックウォーカーよんでいる＞よやくする＞よんでいる＞よみたい＞その他
 const calcWantPoint = (tags:string[]):number => {
   let wantPoint = 0;
   if(tags.includes("よんでいる")){
     wantPoint = 2;
     // ブックウォーカー・無料は若干優先
-    if(tags.includes("ブックウォーカー") || tags.includes("無料")){
-      wantPoint += 1;
+    if(tags.includes("ブックウォーカー") || tags.includes("無料") || tags.includes("カクヨム")){
+      wantPoint += 2;
     }
+  }else if(tags.includes("よやくする")){
+    wantPoint = 3;
   }else if(tags.includes("よみたい")){
     wantPoint = 1;
   }

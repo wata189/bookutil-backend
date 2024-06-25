@@ -5,9 +5,8 @@
   "main": "dist/app.js",
   "scripts": {
     "-------↓開発環境----": "",
-    "dev": "npm run test && npx env-cmd -f .env.dev ts-node-dev --respawn src/app.ts",
-    "-------↓ローカルfirestore----": "",
-    "devFirestore": "firebase emulators:start --import=emulator_data --export-on-exit",
+    "ローカルWebサーバ": "npm run test && npx env-cmd -f .env.dev ts-node-dev --respawn src/app.ts",
+    "ローカルfirestore": "firebase emulators:start --import=emulator_data --export-on-exit",
     "-------↓ローカルDocker----": "",
     "runLocalDocker": "docker compose --env-file .env.dev -f docker-compose_webapi_dev.yml build && docker container run --rm -p 8080:8080 --init --name bookutilapidev bookutilapidev",
     "------↓バッチ実行----": "",
