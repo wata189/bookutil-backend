@@ -3,15 +3,15 @@ import * as ndlSearchUtil from "./ndlSearchUtil";
 import openBdUtil from "./openBdUtil";
 
 export type ApiBook = {
-  bookName: string | null,
-  isbn: string | null,
-  authorName: string | null,
-  publisherName: string | null,
-  coverUrl: string | null
-  memo: string | null
+  bookName: string | null;
+  isbn: string | null;
+  authorName: string | null;
+  publisherName: string | null;
+  coverUrl: string | null;
+  memo: string | null;
 };
-export const getApiBook = async (isbn:string) => {
-  let apiBook:ApiBook|null = null;
+export const getApiBook = async (isbn: string) => {
+  let apiBook: ApiBook | null = null;
   // try{
   //   // 1.googleBooksApiはなんか動かないのでいったんCO
   //   const googleBook = await googleBooksUtil.getBook(isbn);
@@ -26,78 +26,79 @@ export const getApiBook = async (isbn:string) => {
   // }
   //if(apiBook && apiBook.bookName && apiBook.isbn && apiBook.authorName){return apiBook;}
 
-  try{
+  try {
     // 2.ndl
     const ndlBook = await ndlSearchUtil.getNdlBook(isbn);
-    if(ndlBook){
+    if (ndlBook) {
       apiBook = {
         ...ndlBook,
-        memo: null
+        memo: null,
       };
     }
-  }catch(e){
+  } catch (e) {
     console.error(e);
   }
-  if(apiBook && apiBook.bookName && apiBook.isbn && apiBook.authorName){return apiBook;}
+  if (apiBook && apiBook.bookName && apiBook.isbn && apiBook.authorName) {
+    return apiBook;
+  }
 
-  try{
+  try {
     // 3.openBD
     const openBdBook = await openBdUtil.getBookInfo(isbn);
-    if(openBdBook){
-      if(apiBook){
-        if(!apiBook.bookName){
+    if (openBdBook) {
+      if (apiBook) {
+        if (!apiBook.bookName) {
           apiBook.bookName = openBdBook.bookName;
         }
-        if(!apiBook.isbn){
+        if (!apiBook.isbn) {
           apiBook.isbn = openBdBook.isbn;
         }
-        if(!apiBook.authorName){
+        if (!apiBook.authorName) {
           apiBook.authorName = openBdBook.authorName;
         }
-        if(!apiBook.publisherName){
+        if (!apiBook.publisherName) {
           apiBook.publisherName = openBdBook.publisherName;
         }
-        if(!apiBook.coverUrl){
+        if (!apiBook.coverUrl) {
           apiBook.coverUrl = openBdBook.coverUrl;
         }
-      }else{
+      } else {
         apiBook = {
           ...openBdBook,
-          memo: null
+          memo: null,
         };
       }
     }
-
-  }catch(e){
+  } catch (e) {
     console.error(e);
   }
 
   return apiBook;
-}
-export const searchApiBooks = async (searchWord:string) => {
+};
+export const searchApiBooks = async (searchWord: string) => {
   const apiBooks: ApiBook[] = [];
-  
+
   const googleBooks = await googleBooksUtil.searchBooks(searchWord);
-  googleBooks.forEach(book => {
+  googleBooks.forEach((book) => {
     apiBooks.push({
       bookName: book.bookName,
       isbn: book.isbn,
       authorName: book.authorName,
       publisherName: null,
       coverUrl: book.coverUrl,
-      memo: book.memo
+      memo: book.memo,
     });
   });
   const ndlBooks = await ndlSearchUtil.searchNdlBooks(searchWord);
-  ndlBooks.forEach(book => {
+  ndlBooks.forEach((book) => {
     apiBooks.push({
       bookName: book.bookName,
       isbn: book.isbn,
       authorName: book.authorName,
       publisherName: book.publisherName,
       coverUrl: book.coverUrl,
-      memo: null
+      memo: null,
     });
   });
   return apiBooks;
-}
+};

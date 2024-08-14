@@ -1,9 +1,9 @@
-import express, { Application, RequestHandler, Request, Response, NextFunction } from "express";
+import express, { Application } from "express";
 import helmet from "helmet";
 import cors from "cors";
 
 import { systemLogger, connectAccessLogger } from "./modules/logUtil";
-import * as errorUtil from './modules/errorUtil';
+import * as errorUtil from "./modules/errorUtil";
 
 const app: Application = express();
 
@@ -14,21 +14,20 @@ const corsOptions = {
   origin: process.env.CLIENT_URL || "",
   allowedHeaders: "*",
   methods: "*",
-  credentials: true
+  credentials: true,
 };
 app.use(cors(corsOptions));
 
-
 //body-parserの設定
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({extended: true}));
+import bodyParser from "body-parser";
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // accessログ
 app.use(connectAccessLogger);
 
 // ルーティング
-const router = require("./controller");
+import { router } from "./controller";
 app.use("/", router);
 
 app.use(errorUtil.catchNotFound); // いずれのルーティングにもマッチしない(=NOT FOUND)をキャッチ

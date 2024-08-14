@@ -1,6 +1,6 @@
-import {Response} from 'express';
-import * as firestoreUtil from './firestoreUtil';
-import { systemLogger } from './logUtil';
+import { Response } from "express";
+import * as firestoreUtil from "./firestoreUtil";
+import { systemLogger } from "./logUtil";
 import * as xml from "xml-js";
 
 //ステータスコード定数
@@ -33,21 +33,33 @@ export const STATUS_CODES = {
   INTERNAL_SERVER_ERROR: 500,
 };
 
-export const isEnv = ():boolean => {
+export const isEnv = (): boolean => {
   return process.env.ENV === "dev";
 };
 
-export const isIsbn = (isbn:string) => {
+export const isIsbn = (isbn: string) => {
   const regex10 = /^[0-9]{9}[0-9X]$/;
   const regex13 = /^[0-9]{13}$/;
   return regex10.test(isbn) || regex13.test(isbn);
 };
 
-export const getToreadBook = async (documentId:string, fs:firestoreUtil.FirestoreTransaction) => {
-  return await fs.getDocument(firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK, documentId);
+export const getToreadBook = async (
+  documentId: string,
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  return await fs.getDocument(
+    firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK,
+    documentId
+  );
 };
-export const getBookshelfBook = async (documentId:string, fs:firestoreUtil.FirestoreTransaction) => {
-  return await fs.getDocument(firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK, documentId);
+export const getBookshelfBook = async (
+  documentId: string,
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  return await fs.getDocument(
+    firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK,
+    documentId
+  );
 };
 
 export const formatDateToStr = (date: Date, format: string) => {
@@ -60,7 +72,9 @@ export const formatDateToStr = (date: Date, format: string) => {
   };
 
   const formatted = format.replace(/(M+|d+|h+|m+|s+)/g, (v) =>
-    ((v.length > 1 ? "0" : "") + symbol[v.slice(-1) as keyof typeof symbol]).slice(-2)
+    (
+      (v.length > 1 ? "0" : "") + symbol[v.slice(-1) as keyof typeof symbol]
+    ).slice(-2)
   );
 
   return formatted.replace(/(y+)/g, (v) =>
@@ -68,51 +82,53 @@ export const formatDateToStr = (date: Date, format: string) => {
   );
 };
 
-
 // set→array変換で重複削除
 // javascriptはsetも順序が保証される
-export const removeDuplicateElements = (array:any[]) => {
-  return [...(new Set(array))]
+export const removeDuplicateElements = <T>(array: T[]): T[] => {
+  return [...new Set(array)];
 };
 
-export const sendJson = (res: Response, msg?: string, data?: Object): void => {
+export const sendJson = (res: Response, msg?: string, data?: object): void => {
   // 引数なかった場合の処理
   if (!res.statusCode) res.status(STATUS_CODES.OK);
-  if (!msg) msg = '';
+  if (!msg) msg = "";
   if (!data) data = {};
 
-  const result = {...data, status: res.statusCode, msg};
+  const result = { ...data, status: res.statusCode, msg };
   res.json(result);
 
   systemLogger.info(`${res.statusCode} ${msg}`);
 };
 
-export const wait = (sec:number) => {
-  return new Promise(resolve => setTimeout(resolve, sec*1000));
+export const wait = (sec: number) => {
+  return new Promise((resolve) => setTimeout(resolve, sec * 1000));
 };
 
-export const isbn9To10 = (isbn9:string):string => {
-  const sum = isbn9.split('').reduce((acc, c, i) => {
-      return acc + Number(c[0]) * (10 - i);
+export const isbn9To10 = (isbn9: string): string => {
+  const sum = isbn9.split("").reduce((acc, c, i) => {
+    return acc + Number(c[0]) * (10 - i);
   }, 0);
-  let checkDigit = (11 - sum % 11).toString();
-  if(checkDigit === "10"){
+  let checkDigit = (11 - (sum % 11)).toString();
+  if (checkDigit === "10") {
     checkDigit = "X";
   }
-  if(checkDigit === "11"){
+  if (checkDigit === "11") {
     checkDigit = "0";
   }
 
   return isbn9 + checkDigit;
 };
 
-export const isbn12To13 = (isbn12: string):string => {
+export const isbn12To13 = (isbn12: string): string => {
   // チェックディジット計算
-  const sum = isbn12.split("").map((num:string, index:number) => {
-    //ウェイトは1→3→1→3の順
-    const coefficient = index % 2 === 0 ? 1 : 3;
-    return Number(num) * coefficient;
-  }).reduce((a:number, b:number) => a+b); //sum
+  const sum = isbn12
+    .split("")
+    .map((num: string, index: number) => {
+      //ウェイトは1→3→1→3の順
+      const coefficient = index % 2 === 0 ? 1 : 3;
+      return Number(num) * coefficient;
+    })
+    .reduce((a: number, b: number) => a + b); //sum
 
   //10で割ったあまり出す
   const remainder = sum % 10;
@@ -121,27 +137,99 @@ export const isbn12To13 = (isbn12: string):string => {
   return isbn12 + checkDigit;
 };
 
-export const isbn10To13 = (isbn10:string):string => {
-  return isbn12To13("978" + isbn10.slice(0,-1));
+export const isbn10To13 = (isbn10: string): string => {
+  return isbn12To13("978" + isbn10.slice(0, -1));
 };
 
-export const isbn13To10 = (isbn13:string):string => {
+export const isbn13To10 = (isbn13: string): string => {
   return isbn9To10(isbn13.substring(3, 12));
 };
-export const getNewBook = async (documentId:string, fs:firestoreUtil.FirestoreTransaction) => {
-  return await fs.getDocument(firestoreUtil.COLLECTION_PATH.T_NEW_BOOK, documentId);
+export const getNewBook = async (
+  documentId: string,
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  return await fs.getDocument(
+    firestoreUtil.COLLECTION_PATH.T_NEW_BOOK,
+    documentId
+  );
 };
-export const xml2json = (xmlStr:string):any => {
-  const dataStr:string = xml.xml2json(xmlStr, {compact: true});
+export const xml2json = (xmlStr: string): unknown => {
+  const dataStr: string = xml.xml2json(xmlStr, { compact: true });
   return JSON.parse(dataStr);
 };
 
-const fullNum2HalfMap:Record<string, string> = {
-  "０": "0","１": "1","２": "2","３": "3","４": "4","５": "5","６": "6","７": "7","８": "8","９": "9",
-  "Ａ": "A","Ｂ": "B","Ｃ": "C","Ｄ": "D","Ｅ": "E","Ｆ": "F","Ｇ": "G","Ｈ": "H","Ｉ": "I","Ｊ": "J","Ｋ": "K","Ｌ": "L","Ｍ": "M","Ｎ": "N","Ｏ": "O","Ｐ": "P","Ｑ": "Q","Ｒ": "R","Ｓ": "S","Ｔ": "T","Ｕ": "U","Ｖ": "V","Ｗ": "W","Ｘ": "X","Ｙ": "Y","Ｚ": "Z",
-  "ａ": "a","ｂ": "b","ｃ": "c","ｄ": "d","ｅ": "e","ｆ": "f","ｇ": "g","ｈ": "h","ｉ": "i","ｊ": "j","ｋ": "k","ｌ": "l","ｍ": "m","ｎ": "n","ｏ": "o","ｐ": "p","ｑ": "q","ｒ": "r","ｓ": "s","ｔ": "t","ｕ": "u","ｖ": "v","ｗ": "w","ｘ": "x","ｙ": "y","ｚ": "z",
-  "　": " ","！": "!","？": "?","（": "(","）": ")"
+const fullNum2HalfMap: Record<string, string> = {
+  "０": "0",
+  "１": "1",
+  "２": "2",
+  "３": "3",
+  "４": "4",
+  "５": "5",
+  "６": "6",
+  "７": "7",
+  "８": "8",
+  "９": "9",
+  Ａ: "A",
+  Ｂ: "B",
+  Ｃ: "C",
+  Ｄ: "D",
+  Ｅ: "E",
+  Ｆ: "F",
+  Ｇ: "G",
+  Ｈ: "H",
+  Ｉ: "I",
+  Ｊ: "J",
+  Ｋ: "K",
+  Ｌ: "L",
+  Ｍ: "M",
+  Ｎ: "N",
+  Ｏ: "O",
+  Ｐ: "P",
+  Ｑ: "Q",
+  Ｒ: "R",
+  Ｓ: "S",
+  Ｔ: "T",
+  Ｕ: "U",
+  Ｖ: "V",
+  Ｗ: "W",
+  Ｘ: "X",
+  Ｙ: "Y",
+  Ｚ: "Z",
+  ａ: "a",
+  ｂ: "b",
+  ｃ: "c",
+  ｄ: "d",
+  ｅ: "e",
+  ｆ: "f",
+  ｇ: "g",
+  ｈ: "h",
+  ｉ: "i",
+  ｊ: "j",
+  ｋ: "k",
+  ｌ: "l",
+  ｍ: "m",
+  ｎ: "n",
+  ｏ: "o",
+  ｐ: "p",
+  ｑ: "q",
+  ｒ: "r",
+  ｓ: "s",
+  ｔ: "t",
+  ｕ: "u",
+  ｖ: "v",
+  ｗ: "w",
+  ｘ: "x",
+  ｙ: "y",
+  ｚ: "z",
+  "　": " ",
+  "！": "!",
+  "？": "?",
+  "（": "(",
+  "）": ")",
 };
-export const fullStr2Half = (str:string):string => {
-  return str.split("").map(char => fullNum2HalfMap[char] || char).join("");
+export const fullStr2Half = (str: string): string => {
+  return str
+    .split("")
+    .map((char) => fullNum2HalfMap[char] || char)
+    .join("");
 };
