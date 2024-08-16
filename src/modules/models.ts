@@ -590,3 +590,18 @@ export const deleteBookshelfBook = async (
     params.documentId
   );
 };
+
+export type CreateBooksParams = RequestParams & {
+  user: string;
+  books: BookParams[];
+};
+export const createToreadBooks = async (
+  params: CreateBooksParams,
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  const promises: Promise<void>[] = params.books.map((book) => {
+    return createToreadBook(book, fs);
+  });
+
+  await Promise.all(promises);
+};

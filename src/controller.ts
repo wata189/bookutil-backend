@@ -108,6 +108,36 @@ router.post(
   })
 );
 
+//Toread 一括新規作成
+router.post(
+  "/toread/create/multi",
+  wrapAsyncMiddleware(async (req, res) => {
+    const params: models.CreateBooksParams = req.body;
+    let isAuth = false;
+    const data: object = await firestoreUtil.tran([
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        isAuth = await authUtil.isAuth(params.idToken, fs);
+        //ログイン済みでなければログインエラー
+        validationUtil.isAuth(res, isAuth);
+        //パラメータチェック
+        validationUtil.isValidCreateBooks(res, params);
+        //ISBN被りチェック
+        await validationUtil.isCreateBooksUniqueIsbn(res, params.books, fs);
+
+        // DBに格納
+        await models.createToreadBooks(params, fs);
+        return {};
+      },
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        const toreadBooks = await models.fetchToreadBooks(isAuth, fs);
+        return { toreadBooks };
+      },
+    ]);
+    res.status(util.STATUS_CODES.OK);
+    util.sendJson(res, "OK", data);
+  })
+);
+
 //Toread更新
 router.post(
   "/toread/update",

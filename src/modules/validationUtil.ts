@@ -98,6 +98,27 @@ export const isValidBook = (res: Response, params: models.BookParams) => {
   }
 };
 
+export const isValidCreateBooks = (
+  res: Response,
+  params: models.CreateBooksParams
+) => {
+  try {
+    throwInvalidParam(params.user, isExist);
+    throwInvalidParam(params.books, isExist);
+    throwInvalidParam(params.books, isExistArray);
+    for (const book of params.books) {
+      isValidBook(res, book);
+    }
+  } catch (e) {
+    systemLogger.error(e);
+    errorUtil.throwError(
+      res,
+      "不正なパラメータがあります",
+      util.STATUS_CODES.BAD_REQUEST
+    );
+  }
+};
+
 export const isValidUpdateBook = (res: Response, params: models.BookParams) => {
   try {
     throwInvalidParam(params.documentId, isExist);
@@ -175,6 +196,36 @@ export const isCreateUniqueIsbn = async (
       util.STATUS_CODES.BAD_REQUEST
     );
   }
+};
+
+export const isCreateBooksUniqueIsbn = async (
+  res: Response,
+  books: models.BookParams[],
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  // 作成する本に重複ISBNがあるかどうか確認
+  const isbns: string[] = books
+    .map((book) => (book.isbn ? book.isbn : ""))
+    .filter((isbn) => isExist(isbn))
+    .map((isbn) => {
+      // isbn13に統一
+      return isbn.length === 13 ? isbn : util.isbn10To13(isbn);
+    });
+  // 重複削除すると長さが変わる→重複するISBNがある→エラー
+  if (isbns.length !== util.removeDuplicateElements(isbns).length) {
+    errorUtil.throwError(
+      res,
+      "同じISBNの本があります",
+      util.STATUS_CODES.BAD_REQUEST
+    );
+  }
+
+  // DB側のチェック
+  const promises: Promise<void>[] = [];
+  for (const book of books) {
+    promises.push(isCreateUniqueIsbn(res, book.isbn, fs));
+  }
+  await Promise.all(promises);
 };
 
 //ISBN被りチェック 更新
