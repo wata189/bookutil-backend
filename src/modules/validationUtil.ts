@@ -380,7 +380,6 @@ export const isValidAddNewBooksParams = (
       throwInvalidParam(newBook.documentId, isExist);
       throwInvalidParam(newBook.updateAt, isExist);
       throwInvalidParam(newBook.updateAt, isNumber);
-      throwInvalidParam(newBook.isAdd, isFlg);
     }
   } catch (e) {
     systemLogger.error(e);

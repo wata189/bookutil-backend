@@ -315,7 +315,7 @@ router.post(
 
 // 新刊一括追加 新刊データの取得
 router.post(
-  "/toread/newbooks/fetch",
+  "/newbook/fetch",
   wrapAsyncMiddleware(async (req, res) => {
     const params: models.RequestParams = req.body;
     let isAuth = false;
@@ -337,7 +337,7 @@ router.post(
 );
 
 router.post(
-  "/toread/newbooks/add",
+  "/newbook/add",
   wrapAsyncMiddleware(async (req, res) => {
     const params: models.AddNewBooksParams = req.body;
     let isAuth = false;
@@ -355,7 +355,7 @@ router.post(
 
         //作成するtoreadのISBN被りチェック
         for await (const newBook of params.newBooks) {
-          if (newBook.isAdd) {
+          if (newBook.addTo) {
             await validationUtil.isCreateUniqueIsbn(res, newBook.isbn, fs);
           }
         }
@@ -367,7 +367,8 @@ router.post(
       },
       async (fs: firestoreUtil.FirestoreTransaction) => {
         const toreadBooks = await models.fetchToreadBooks(isAuth, fs);
-        return { toreadBooks };
+        const bookshelfBooks = await models.fetchBookshelfBooks(fs);
+        return { toreadBooks, bookshelfBooks };
       },
     ]);
     res.status(util.STATUS_CODES.OK);

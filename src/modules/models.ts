@@ -6,7 +6,6 @@ import { checkMultiCalil } from "./calilUtil";
 import { Response } from "express";
 
 const TAG_WANT = "よみたい";
-const NDL_SEARCH_URL = process.env.NDL_SEARCH_URL;
 
 export const fetchLibraries = async (
   fs: firestoreUtil.FirestoreTransaction
@@ -312,7 +311,7 @@ export type NewBookForm = {
   publisherName: string;
   newBookCheckFlg: number;
   tags: string;
-  isAdd: boolean;
+  addTo: "Toread" | "Bookshelf" | "";
   updateAt: number;
 };
 export const fetchNewBooks = async (
@@ -336,7 +335,7 @@ export const fetchNewBooks = async (
       newBookCheckFlg: 1,
       updateAt: resultRow.update_at.seconds,
       tags: "",
-      isAdd: false,
+      addTo: "",
     };
   });
 };
@@ -366,24 +365,47 @@ export const addNewBooks = async (
       )
     );
 
-    // isAddついてるものだけtoreadに新規作成
-    if (!newBook.isAdd) {
-      continue;
+    // toreadに新規作成
+    if (newBook.addTo === "Toread") {
+      const bookParams: BookParams = {
+        documentId: null,
+        bookName: newBook.bookName,
+        isbn: newBook.isbn,
+        authorName: newBook.authorName,
+        publisherName: newBook.publisherName,
+        newBookCheckFlg: newBook.newBookCheckFlg,
+        // eslint-disable-next-line no-irregular-whitespace
+        tags: newBook.tags.split(/[ 　,/]/).filter((tag) => tag),
+        idToken: params.idToken,
+        user: params.user,
+        page: null,
+        memo: "",
+        coverUrl: null,
+        isExternalCooperation: false,
+        updateAt: null,
+      };
+      promises.push(createToreadBook(bookParams, fs));
+    } else if (newBook.addTo === "Bookshelf") {
+      const bookParams: BookshelfBookParams = {
+        documentId: null,
+        bookName: newBook.bookName,
+        isbn: newBook.isbn,
+        coverUrl: "",
+        authorName: newBook.authorName,
+        publisherName: newBook.publisherName,
+        readDate: null,
+        updateAt: null,
+        // eslint-disable-next-line no-irregular-whitespace
+        tags: newBook.tags.split(/[ 　,/]/).filter((tag) => tag),
+        rate: 0,
+        contents: [],
+        dispCoverUrl: "",
+
+        idToken: params.idToken,
+        user: params.user,
+      };
+      promises.push(createBookshelfBook(bookParams, fs));
     }
-    const isbn13 =
-      newBook.isbn.length === 13 ? newBook.isbn : util.isbn10To13(newBook.isbn);
-    const bookParams: BookParams = {
-      ...newBook,
-      // eslint-disable-next-line no-irregular-whitespace
-      tags: newBook.tags.split(/[ 　,/]/).filter((tag) => tag),
-      idToken: params.idToken,
-      user: params.user,
-      page: null,
-      memo: "",
-      coverUrl: `${NDL_SEARCH_URL}/thumbnail/${isbn13}.jpg`,
-      isExternalCooperation: false,
-    };
-    promises.push(createToreadBook(bookParams, fs));
   }
   // 非同期で終わるまで待つ
   await Promise.all(promises);
