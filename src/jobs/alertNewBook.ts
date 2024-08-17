@@ -6,7 +6,7 @@ import * as util from "../modules/util";
 import * as discordUtil from "../modules/discordUtil";
 const CLIENT_URL = process.env.CLIENT_URL;
 const SINKAN_NET_ICAL = process.env.SINKAN_NET_ICAL || "";
-const TOREAD_CREATE_NEW_BOOK_URL = `${CLIENT_URL}/toread?alertNewBooksFlg=1`;
+const TOREAD_CREATE_NEW_BOOK_URL = `${CLIENT_URL}/newbook`;
 
 type NewBookDocument = {
   isbn: string;
