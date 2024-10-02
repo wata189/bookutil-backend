@@ -15,7 +15,17 @@ export const fetchLibraries = async (
     "order_num"
   );
 
+  const today = new Date();
+  const todayYyyy = today.getFullYear();
+  const todayM = today.getMonth() + 1; // getmonthだと0indexであることに注意
+
   return result.map((resultRow) => {
+    let calendarUrl = null;
+    if (resultRow.calendar_url) {
+      calendarUrl = resultRow.calendar_url
+        .replace("@yyyy@", todayYyyy)
+        .replace("@M@", todayM);
+    }
     return {
       id: resultRow.id,
       city: resultRow.city,
@@ -27,7 +37,7 @@ export const fetchLibraries = async (
       orderNum: resultRow.order_num,
 
       spUrl: resultRow.sp_url,
-      calendarUrl: resultRow.calendar_url,
+      calendarUrl,
       barcodeUrl: resultRow.barcode_url,
     };
   });
