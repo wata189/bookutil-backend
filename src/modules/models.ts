@@ -634,9 +634,7 @@ export const createToreadBooks = async (
   params: CreateBooksParams,
   fs: firestoreUtil.FirestoreTransaction
 ) => {
-  const promises: Promise<void>[] = params.books.map((book) => {
-    return createToreadBook(book, fs);
-  });
-
-  await Promise.all(promises);
+  for (const book of params.books) {
+    await createToreadBook(book, fs);
+  }
 };
