@@ -320,6 +320,7 @@ export type NewBookForm = {
   isbn: string;
   authorName: string;
   publisherName: string;
+  publishDate: string;
   newBookCheckFlg: number;
   tags: string;
   addTo: "Toread" | "Bookshelf" | "";
@@ -343,6 +344,7 @@ export const fetchNewBooks = async (
       isbn: resultRow.isbn,
       authorName: resultRow.author_name,
       publisherName: resultRow.publisher_name,
+      publishDate: resultRow.publish_date,
       newBookCheckFlg: 1,
       updateAt: resultRow.update_at.seconds,
       tags: "",
