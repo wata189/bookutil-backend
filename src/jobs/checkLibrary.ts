@@ -8,7 +8,9 @@ const CLIENT_URL = process.env.CLIENT_URL;
 
 const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
   // newBookCheckFlg立ってる図書館を取得
-  const libraries = await searchCheckNewBookLibraries(fs);
+  const libraries = (await searchCheckNewBookLibraries(fs)).sort(
+    (a, b) => a.checkLibraryOrderNum - b.checkLibraryOrderNum
+  );
   // newBookCheckFlg立っている本を取得
   const toreadBooks = await searchCheckNewBookToreadBooks(fs);
   // 図書館×本で検索 break・continueを使う関係でfor awaitで同期処理
@@ -20,7 +22,10 @@ const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
     for (const library of libraries) {
       // 検索対象or検索対象より優先度の高い図書館のタグ入っていたら飛ばす
       const cityTags = libraries
-        .filter((tmpLib) => tmpLib.orderNum <= library.orderNum)
+        .filter(
+          (tmpLib) =>
+            tmpLib.checkLibraryOrderNum <= library.checkLibraryOrderNum
+        )
         .map((tmpLib) => tmpLib.city + "図書館");
       const isSearched =
         cityTags.filter((tag) => book.tags.includes(tag)).length > 0;
@@ -73,10 +78,8 @@ const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
     };
     // 更新タグは重複消す
     bookParams.tags = util.removeDuplicateElements(updateTags);
-    // 最優先図書館（orderNum===0）の場合は図書館チェクフラグ消す
-    bookParams.newBookCheckFlg = library.orderNum === 0 ? 0 : 1;
-    // 他URLが入っている場合はそれを尊重 空の場合は予約URLを設定する
-    bookParams.memo = book.memo ? book.memo : searchResult.reserveUrl;
+    // 最優先図書館（checkLibraryOrderNum===0）の場合は図書館チェクフラグ消す
+    bookParams.newBookCheckFlg = library.checkLibraryOrderNum === 0 ? 0 : 1;
 
     promises.push(models.updateToreadBook(book.documentId, bookParams, fs));
 

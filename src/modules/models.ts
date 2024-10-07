@@ -35,6 +35,7 @@ export const fetchLibraries = async (
       mapUrl: resultRow.map_url,
       newBookCheckFlg: resultRow.new_book_check_flg,
       orderNum: resultRow.order_num,
+      checkLibraryOrderNum: resultRow.check_library_order_num,
 
       spUrl: resultRow.sp_url,
       calendarUrl,
