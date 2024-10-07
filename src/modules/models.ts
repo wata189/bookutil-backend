@@ -344,7 +344,7 @@ export const fetchNewBooks = async (
       isbn: resultRow.isbn,
       authorName: resultRow.author_name,
       publisherName: resultRow.publisher_name,
-      publishDate: resultRow.publish_date,
+      publishDate: resultRow.publish_date.split("-").join("/"),
       newBookCheckFlg: 1,
       updateAt: resultRow.update_at.seconds,
       tags: "",
