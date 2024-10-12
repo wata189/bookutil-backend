@@ -445,12 +445,26 @@ type BookshelfBook = {
   dispCoverUrl: string;
 };
 export const fetchBookshelfBooks = async (
+  isAuth: boolean,
   fs: firestoreUtil.FirestoreTransaction
 ) => {
-  const result = await fs.getCollection(
+  // 未ログインの場合の取得内容
+  //  - ★3以上
+  //  - プログラミングタグあり
+  const fieldPath = isAuth ? undefined : "tags";
+  const opStr = isAuth ? undefined : "array-contains";
+  const value = isAuth ? undefined : "プログラミング";
+  let result = await fs.getCollection(
     firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK,
-    "update_at"
+    "update_at",
+    fieldPath,
+    opStr,
+    value
   );
+  if (!isAuth) {
+    // 非ログイン時はrate3以上
+    result = result.filter((resultRow) => resultRow.rate >= 3);
+  }
 
   const books: BookshelfBook[] = result.map((resultRow) => {
     return {
@@ -482,7 +496,8 @@ export const fetchTags = async (
   fs: firestoreUtil.FirestoreTransaction
 ) => {
   //未ログインの場合は表示用のタグリスト適当に返却
-  if (!isAuth) return [TAG_WANT, "プログラミング", "アルゴリズム"];
+  if (!isAuth)
+    return [TAG_WANT, "プログラミング", "プログラミング/アルゴリズム"];
 
   //DBからタグ取得
   const result = await fs.getCollection(
@@ -521,7 +536,7 @@ export const fetchTags = async (
     );
   });
   // bookshelfTags
-  const bookShelfBooks = await fetchBookshelfBooks(fs);
+  const bookShelfBooks = await fetchBookshelfBooks(isAuth, fs);
   bookShelfBooks.forEach((book) => {
     bookTags.push(
       book.tags

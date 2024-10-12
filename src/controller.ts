@@ -367,7 +367,7 @@ router.post(
       },
       async (fs: firestoreUtil.FirestoreTransaction) => {
         const toreadBooks = await models.fetchToreadBooks(isAuth, fs);
-        const bookshelfBooks = await models.fetchBookshelfBooks(fs);
+        const bookshelfBooks = await models.fetchBookshelfBooks(isAuth, fs);
         return { toreadBooks, bookshelfBooks };
       },
     ]);
@@ -383,10 +383,8 @@ router.post(
     const data: object = await firestoreUtil.tran([
       async (fs: firestoreUtil.FirestoreTransaction) => {
         const isAuth = await authUtil.isAuth(req.body.idToken?.toString(), fs);
-        // ログイン済みでなければログインエラー
-        validationUtil.isAuth(res, isAuth);
 
-        const bookshelfBooks = await models.fetchBookshelfBooks(fs);
+        const bookshelfBooks = await models.fetchBookshelfBooks(isAuth, fs);
         return { bookshelfBooks };
       },
     ]);
@@ -399,9 +397,10 @@ router.post(
   "/bookshelf/create",
   wrapAsyncMiddleware(async (req, res) => {
     const params: models.BookshelfBookParams = req.body;
+    let isAuth = false;
     const data: object = await firestoreUtil.tran([
       async (fs: firestoreUtil.FirestoreTransaction) => {
-        const isAuth = await authUtil.isAuth(params.idToken, fs);
+        isAuth = await authUtil.isAuth(params.idToken, fs);
         //ログイン済みでも外部連携でもなければログインエラー
         validationUtil.isAuth(res, isAuth);
         //パラメータチェック
@@ -414,7 +413,7 @@ router.post(
         return {};
       },
       async (fs: firestoreUtil.FirestoreTransaction) => {
-        const bookshelfBooks = await models.fetchBookshelfBooks(fs);
+        const bookshelfBooks = await models.fetchBookshelfBooks(isAuth, fs);
         return { bookshelfBooks };
       },
     ]);
@@ -461,7 +460,7 @@ router.post(
         return {};
       },
       async (fs: firestoreUtil.FirestoreTransaction) => {
-        const bookshelfBooks = await models.fetchBookshelfBooks(fs);
+        const bookshelfBooks = await models.fetchBookshelfBooks(isAuth, fs);
         return { bookshelfBooks };
       },
     ]);
@@ -499,7 +498,7 @@ router.post(
         return {};
       },
       async (fs: firestoreUtil.FirestoreTransaction) => {
-        const bookshelfBooks = await models.fetchBookshelfBooks(fs);
+        const bookshelfBooks = await models.fetchBookshelfBooks(isAuth, fs);
         return { bookshelfBooks };
       },
     ]);
