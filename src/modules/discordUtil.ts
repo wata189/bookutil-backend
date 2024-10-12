@@ -1,4 +1,5 @@
 import axiosBase from "axios";
+import { systemLogger } from "./logUtil";
 const DISCORD_URL_CHECK_LIBRARY = process.env.DISCORD_URL_CHECK_LIBRARY || "";
 const DISCORD_URL_NEW_BOOK_DISCOVER =
   process.env.DISCORD_URL_NEW_BOOK_DISCOVER || "";
@@ -11,6 +12,7 @@ const axios = axiosBase.create({
 });
 
 const send = async (url: string, username: string, msg: string) => {
+  systemLogger.info(`discord sendMsg: ${msg}`);
   return await axios.post(url, { username, content: msg });
 };
 
