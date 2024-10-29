@@ -30,6 +30,18 @@
 | update_user | 更新者   | string    | Y    |      |     | "system" |      |
 | update_at   | 更新日時 | timestamp | Y    |      |     | 現在時刻 |      |
 
+# m_publisher: 出版社マスタ
+
+| 物理名         | 論理名         | 型        | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考                           |
+| -------------- | -------------- | --------- | ---- | ---- | --- | -------- | ------------------------------ |
+| code           | 出版社コード   | string    | Y    | Y    | Y   |          | ISBNに含まれている出版社コード |
+| name           | 出版社名       | string    | Y    |      |     |          |                                |
+| is_on_kadokawa | 角川子会社ﾌﾗｸﾞ | boolean   | Y    |      |     | false    | ブックウォーカータグつけるため |
+| create_user    | 作成者         | string    | Y    |      |     | "system" |                                |
+| create_at      | 作成日時       | timestamp | Y    |      |     | 現在時刻 |                                |
+| update_user    | 更新者         | string    | Y    |      |     | "system" |                                |
+| update_at      | 更新日時       | timestamp | Y    |      |     | 現在時刻 |                                |
+
 # m_user: ユーザマスタ
 
 | 物理名   | 論理名   | 型     | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考                                        |
