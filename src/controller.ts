@@ -45,6 +45,21 @@ router.post(
   })
 );
 
+// 出版社マスタ取得
+router.post(
+  "/publishers/fetch",
+  wrapAsyncMiddleware(async (req, res) => {
+    const data: object = await firestoreUtil.tran([
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        const publishers = await models.fetchPublishers(fs);
+        return { publishers };
+      },
+    ]);
+    res.status(util.STATUS_CODES.OK);
+    util.sendJson(res, "OK", data);
+  })
+);
+
 //Toread初期処理
 router.post(
   "/toread/fetch",

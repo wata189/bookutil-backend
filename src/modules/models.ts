@@ -653,3 +653,23 @@ export const createToreadBooks = async (
     await createToreadBook(book, fs);
   }
 };
+
+type Publisher = {
+  code: string;
+  name: string;
+  isOnKadokawa: boolean;
+};
+export const fetchPublishers = async (
+  fs: firestoreUtil.FirestoreTransaction
+): Promise<Publisher[]> => {
+  const result = await fs.getCollection(
+    firestoreUtil.COLLECTION_PATH.M_PUBLISHER
+  );
+  return result.map((resultRow) => {
+    return {
+      code: resultRow.code,
+      name: resultRow.name,
+      isOnKadokawa: resultRow.is_on_kadokawa,
+    };
+  });
+};
