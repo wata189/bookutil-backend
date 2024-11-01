@@ -50,6 +50,7 @@ export type ToreadBook = {
   isbn: string | null;
   authorName: string | null;
   publisherName: string | null;
+  publishedMonth: string | null;
   page: number | null;
   memo: string | null;
   coverUrl: string;
@@ -101,6 +102,7 @@ export const fetchToreadBooks = async (
       isbn: resultRow.isbn,
       authorName: resultRow.author_name,
       publisherName: resultRow.publisher_name,
+      publishedMonth: resultRow.published_month,
       page: resultRow.page,
       memo: resultRow.memo || null,
       coverUrl: resultRow.cover_url,
@@ -130,6 +132,7 @@ export type BookParams = RequestParams & {
   page: number | null;
   authorName: string | null;
   publisherName: string | null;
+  publishedMonth: string | null;
   memo: string | null;
   coverUrl: string | null;
   newBookCheckFlg: number;
@@ -168,6 +171,7 @@ export type BookDocument = {
   page: number | null;
   author_name: string | null;
   publisher_name: string | null;
+  published_month: string | null;
   memo: string | null;
   cover_url: string | null;
   new_book_check_flg: number;
@@ -184,6 +188,7 @@ const toreadBookParamsToDocument = (params: BookParams): BookDocument => {
     page: params.page,
     author_name: params.authorName,
     publisher_name: params.publisherName,
+    published_month: params.publishedMonth,
     memo: params.memo,
     cover_url: params.coverUrl,
     new_book_check_flg: params.newBookCheckFlg,
@@ -378,6 +383,8 @@ export const addNewBooks = async (
       )
     );
 
+    // YYYY-MM-DD→YYYY/MMに変換
+    const publishedMonth = newBook.publishDate.slice(0, 7).replace("-", "/");
     // toreadに新規作成
     if (newBook.addTo === "Toread") {
       const bookParams: BookParams = {
@@ -386,6 +393,7 @@ export const addNewBooks = async (
         isbn: newBook.isbn,
         authorName: newBook.authorName,
         publisherName: newBook.publisherName,
+        publishedMonth,
         newBookCheckFlg: newBook.newBookCheckFlg,
         // eslint-disable-next-line no-irregular-whitespace
         tags: newBook.tags.split(/[ 　,/]/).filter((tag) => tag),
@@ -406,6 +414,7 @@ export const addNewBooks = async (
         coverUrl: "",
         authorName: newBook.authorName,
         publisherName: newBook.publisherName,
+        publishedMonth,
         readDate: null,
         updateAt: null,
         // eslint-disable-next-line no-irregular-whitespace
@@ -437,6 +446,7 @@ type BookshelfBook = {
   coverUrl: string;
   authorName: string | null;
   publisherName: string | null;
+  publishedMonth: string | null;
   readDate: string | null;
   updateAt: number | null;
   tags: string[];
@@ -473,6 +483,7 @@ export const fetchBookshelfBooks = async (
       isbn: resultRow.isbn,
       authorName: resultRow.author_name,
       publisherName: resultRow.publisher_name,
+      publishedMonth: resultRow.published_month,
       coverUrl: resultRow.cover_url,
       readDate: resultRow.read_date,
       updateAt: resultRow.update_at.seconds,
@@ -590,6 +601,7 @@ export type BookshelfBookDocument = {
   isbn: string | null;
   author_name: string | null;
   publisher_name: string | null;
+  published_month: string | null;
   cover_url: string | null;
   tags: string[];
   read_date: string | null;
@@ -615,6 +627,7 @@ const bookshelfBookParamsToDocument = (
     isbn: params.isbn,
     author_name: params.authorName,
     publisher_name: params.publisherName,
+    published_month: params.publishedMonth,
     cover_url: params.coverUrl,
     tags: params.tags,
     read_date: params.readDate,

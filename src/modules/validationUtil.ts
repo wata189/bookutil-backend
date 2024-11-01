@@ -65,6 +65,16 @@ export const isValidDate = (val: string) => {
   const date = new Date(val);
   return !isNaN(date.getDate());
 };
+const isYearMonthStr = (val: string) => {
+  const regexYear = /^\d{4}$/;
+  const regexYearMonth = /^\d{4}\/\d{2}$/;
+  return regexYear.test(val) || regexYearMonth.test(val);
+};
+const isValidYearMonth = (val: string) => {
+  const regexYear = /^\d{4}$/;
+  const regexYearMonth = /^\d{4}\/(1[0-2]|0[1-9])$/;
+  return regexYear.test(val) || regexYearMonth.test(val);
+};
 
 const throwInvalidParam = <T>(param: T, checkFunc: (val: T) => boolean) => {
   if (!checkFunc(param)) throw new Error();
@@ -79,6 +89,11 @@ export const isValidBook = (res: Response, params: models.BookParams) => {
     throwInvalidParam(params.user, isExist);
 
     if (params.isbn) throwInvalidParam(params.isbn, isIsbn);
+
+    if (params.publishedMonth) {
+      throwInvalidParam(params.publishedMonth, isYearMonthStr);
+      throwInvalidParam(params.publishedMonth, isValidYearMonth);
+    }
 
     if (params.page) {
       throwInvalidParam(params.page, isNumber);
@@ -453,6 +468,12 @@ export const isValidBookshelfBook = (
     if (params.coverUrl) {
       throwInvalidParam(params.coverUrl, isUrl);
     }
+
+    if (params.publishedMonth) {
+      throwInvalidParam(params.publishedMonth, isYearMonthStr);
+      throwInvalidParam(params.publishedMonth, isValidYearMonth);
+    }
+
     if (params.readDate) {
       throwInvalidParam(params.readDate, isDateStr);
       throwInvalidParam(params.readDate, isValidDate);
