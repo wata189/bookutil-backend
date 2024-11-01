@@ -418,7 +418,7 @@ export const addNewBooks = async (
         idToken: params.idToken,
         user: params.user,
         page: null,
-        memo: "",
+        memo: null,
         coverUrl: null,
         isExternalCooperation: false,
         updateAt: null,
@@ -433,6 +433,7 @@ export const addNewBooks = async (
         authorName: newBook.authorName,
         publisherName: newBook.publisherName,
         publishedMonth,
+        memo: null,
         readDate: null,
         updateAt: null,
         // eslint-disable-next-line no-irregular-whitespace
@@ -465,6 +466,7 @@ type BookshelfBook = {
   authorName: string | null;
   publisherName: string | null;
   publishedMonth: string | null;
+  memo: string | null;
   readDate: string | null;
   updateAt: number | null;
   tags: string[];
@@ -506,6 +508,7 @@ export const fetchBookshelfBooks = async (
       readDate: resultRow.read_date,
       updateAt: resultRow.update_at.seconds,
       tags: resultRow.tags,
+      memo: resultRow.memo,
       rate: resultRow.rate,
       contents: resultRow.contents.map((content: ContentDocument) => {
         return {
@@ -622,6 +625,7 @@ export type BookshelfBookDocument = {
   published_month: string | null;
   cover_url: string | null;
   tags: string[];
+  memo: string | null;
   read_date: string | null;
   rate: number;
   contents: ContentDocument[];
@@ -648,6 +652,7 @@ const bookshelfBookParamsToDocument = (
     published_month: params.publishedMonth,
     cover_url: params.coverUrl,
     tags: params.tags,
+    memo: params.memo,
     read_date: params.readDate,
     rate: params.rate,
     contents: contents,
