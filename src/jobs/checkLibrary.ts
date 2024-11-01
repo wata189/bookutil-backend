@@ -16,9 +16,8 @@ const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
   // 図書館×本で検索 break・continueを使う関係でfor awaitで同期処理
   const searchResults = [];
   for await (const book of toreadBooks) {
-    if (!book.isbn) {
-      continue;
-    } // isbn未入力は飛ばす
+    if (!book.isbn) continue; // isbn未入力は飛ばす
+
     for (const library of libraries) {
       // 検索対象or検索対象より優先度の高い図書館のタグ入っていたら飛ばす
       const cityTags = libraries
@@ -56,8 +55,7 @@ const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
     `【${yyyyMMdd}】図書館で本が見つかったよ！`
   );
 
-  // promiseallで非同期的にDB更新とメッセージ処理
-  const promises = [];
+  // TODO: 重複気になる いったん同期にしてみる
   for (const searchResult of searchResults) {
     const library = searchResult.library;
     const book = searchResult.book;
@@ -81,17 +79,16 @@ const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
     // 最優先図書館（checkLibraryOrderNum===0）の場合は図書館チェクフラグ消す
     bookParams.newBookCheckFlg = library.checkLibraryOrderNum === 0 ? 0 : 1;
 
-    promises.push(models.updateToreadBook(book.documentId, bookParams, fs));
+    await models.updateToreadBook(book.documentId, bookParams, fs);
 
     // discordメッセージ送信
     const msg = `- ${library.city}図書館 / ${book.authorName}『${book.bookName}』
  - [予約URLを開く](${searchResult.reserveUrl})
  - [bookutilで開く](${CLIENT_URL}/toread?filterCondWord=${book.isbn})`;
-    promises.push(discordUtil.sendCheckLibrary(msg));
+    await discordUtil.sendCheckLibrary(msg);
     // あまり高速でディスコに送るとエラー出るので、10秒待つ
     await util.wait(10);
   }
-  await Promise.all(promises);
   return {};
 };
 
