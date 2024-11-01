@@ -250,6 +250,24 @@ export const addToreadTag = async (
   }
   await Promise.all(promises);
 };
+export const addBookshelfTag = async (
+  params: SimpleBooksParams,
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  const tags = params.tags || [];
+  const promises = [];
+  for (const book of params.books) {
+    promises.push(
+      fs.addArray(
+        firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK,
+        book.documentId,
+        "tags",
+        tags
+      )
+    );
+  }
+  await Promise.all(promises);
+};
 
 export const addWantTag = async (
   res: Response,
