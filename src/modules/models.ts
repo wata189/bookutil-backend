@@ -548,10 +548,12 @@ export const fetchTags = async (
   // TODO: タグマスタにignoreTagsのフラグも入れる？
   const ignoreTags = [
     ...libraryTags,
+    "よやくする",
     "よんでいる",
     "よみたい",
     "かいたい",
     "ブックウォーカー",
+    "ブックウォーカー?",
     "キンドルアンリミテッド",
     "無料",
     "図書館未定",
