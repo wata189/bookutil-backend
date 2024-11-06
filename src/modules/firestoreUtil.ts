@@ -93,6 +93,18 @@ export class FirestoreTransaction {
     };
     this.updateDocument(collectionPath, documentId, document);
   }
+
+  async deleteArray(
+    collectionPath: string,
+    documentId: string,
+    field: string,
+    values: unknown[]
+  ) {
+    const document = {
+      [field]: FieldValue.arrayRemove(...values),
+    };
+    this.updateDocument(collectionPath, documentId, document);
+  }
 }
 
 export const tran = async (

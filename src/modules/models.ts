@@ -250,6 +250,22 @@ export const addToreadTag = async (
   }
   await Promise.all(promises);
 };
+export const deleteToreadTag = async (
+  params: SimpleBooksParams,
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  const tags = params.tags || [];
+  const promises = params.books.map((book) => {
+    return fs.deleteArray(
+      firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK,
+      book.documentId,
+      "tags",
+      tags
+    );
+  });
+  await Promise.all(promises);
+};
+
 export const addBookshelfTag = async (
   params: SimpleBooksParams,
   fs: firestoreUtil.FirestoreTransaction

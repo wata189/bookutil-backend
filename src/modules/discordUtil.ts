@@ -3,6 +3,7 @@ import { systemLogger } from "./logUtil";
 const DISCORD_URL_CHECK_LIBRARY = process.env.DISCORD_URL_CHECK_LIBRARY || "";
 const DISCORD_URL_NEW_BOOK_DISCOVER =
   process.env.DISCORD_URL_NEW_BOOK_DISCOVER || "";
+const DISCORD_URL_ALERT = process.env.DISCORD_URL_ALERT || "";
 
 const axios = axiosBase.create({
   headers: {
@@ -22,4 +23,8 @@ export const sendCheckLibrary = async (msg: string) => {
 
 export const sendNewBookDiscover = async (msg: string) => {
   await send(DISCORD_URL_NEW_BOOK_DISCOVER, "新刊発見くん", msg);
+};
+
+export const sendAlert = async (msg: string) => {
+  await send(DISCORD_URL_ALERT, "Bookutilお知らせくん", msg);
 };
