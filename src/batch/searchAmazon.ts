@@ -26,8 +26,7 @@ const main = async () => {
 
   const toreadBooks = data.toreadBooks
     .filter((b) => b.isbn) // isbnあるものだけ
-    .filter((b) => !b.tags.includes(TAG.BOOK_WORKER)) // ブックウォーカーは除外
-    .slice(0, 50); // TODO: テストなので一部だけ
+    .filter((b) => !b.tags.includes(TAG.BOOK_WORKER)); // ブックウォーカーは除外
 
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
