@@ -10,6 +10,7 @@ const TAG = {
   KINDLE_UNLIMITED: "キンドルアンリミテッド",
   AUDIBLE: "オーディブル",
   BOOK_WORKER: "ブックウォーカー",
+  FREE: "無料",
 };
 
 const FIRESTORE_LIMIT = 495;
@@ -26,7 +27,8 @@ const main = async () => {
 
   const toreadBooks = data.toreadBooks
     .filter((b) => b.isbn) // isbnあるものだけ
-    .filter((b) => !b.tags.includes(TAG.BOOK_WORKER)); // ブックウォーカーは除外
+    .filter((b) => !b.tags.includes(TAG.BOOK_WORKER)) // ブックウォーカーは除外
+    .filter((b) => !b.tags.includes(TAG.FREE)); // 無料も除外
 
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
@@ -39,9 +41,6 @@ const main = async () => {
   const deleteAudibleTagBooks: models.SimpleBook[] = [];
   for (const toreadBook of toreadBooks) {
     try {
-      // いちおう1秒待つ
-      await util.wait(1);
-
       let isbn10 = toreadBook.isbn;
       if (!isbn10) {
         continue;
@@ -52,6 +51,9 @@ const main = async () => {
 
       const url = AMZN_URL + isbn10;
       await page.goto(url);
+
+      // いちおう5秒待つ
+      await util.wait(5);
       const hasKindleUnlimited = await searchKindleUnlimited(page);
       const hasAudible = await searchAudible(page);
 
