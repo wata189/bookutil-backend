@@ -365,6 +365,18 @@ export type NewBookForm = {
   addTo: "Toread" | "Bookshelf" | "";
   updateAt: number;
 };
+export type NewBookDocument = {
+  isbn: string;
+  author_name: string;
+  book_name: string;
+  publish_date: string;
+  publisher_name: string;
+  create_user: string;
+  update_user: string;
+  create_at: Timestamp;
+  update_at: Timestamp;
+  is_created_toread: boolean;
+};
 export const fetchNewBooks = async (
   fs: firestoreUtil.FirestoreTransaction
 ): Promise<NewBookForm[]> => {
