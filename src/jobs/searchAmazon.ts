@@ -45,13 +45,10 @@ const main = async () => {
     }
   }
 
-  const START_INDEX = 0;
-  const END_INDEX = START_INDEX + 2000;
   const toreadBooks = data.toreadBooks
     .filter((b) => b.isbn) // isbnあるものだけ
-    .filter((b) => !b.tags.includes(TAG.BOOK_WORKER)) // ブックウォーカーは除外
-    .filter((b) => !b.tags.includes(TAG.FREE))
-    .slice(START_INDEX, END_INDEX); // テスト用なので減らす
+    .filter((b) => !b.tags.includes(TAG.BOOK_WORKER)) // ブックウォーカー・無料タグは除外
+    .filter((b) => !b.tags.includes(TAG.FREE));
 
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
@@ -77,8 +74,8 @@ const main = async () => {
       const url = AMZN_URL + isbn10;
       await page.goto(url);
 
-      // いちおう3秒待つ
-      await util.wait(2);
+      // いちおう5秒待つ
+      await util.wait(5);
 
       const hasKindleUnlimited = await searchKindleUnlimited(page);
       const hasAudible = await searchAudible(page);
