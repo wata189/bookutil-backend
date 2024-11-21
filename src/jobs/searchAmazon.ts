@@ -6,8 +6,6 @@ import * as discordUtil from "../modules/discordUtil";
 import { Timestamp } from "firebase-admin/firestore";
 
 const AMZN_URL = "https://www.amazon.co.jp/dp/";
-const CLIENT_URL = process.env.CLIENT_URL;
-const TOREAD_CREATE_NEW_BOOK_URL = `${CLIENT_URL}/newbook`;
 
 const JOB_USER = "jobs/searchAmazon.ts";
 
@@ -17,6 +15,7 @@ const TAG = {
   BOOK_WORKER: "ブックウォーカー",
   FREE: "無料",
   HAS_BUNKO: "文庫あり",
+  HAS_NEWER_VERSION: "新版あり",
 };
 
 const FIRESTORE_LIMIT = 495;
@@ -47,7 +46,8 @@ const main = async () => {
 
   const toreadBooks = data.toreadBooks
     .filter((b) => b.isbn) // isbnあるものだけ
-    .filter((b) => !b.tags.includes(TAG.BOOK_WORKER)) // ブックウォーカー・無料タグは除外
+    // ブックウォーカー・無料タグは除外
+    .filter((b) => !b.tags.includes(TAG.BOOK_WORKER))
     .filter((b) => !b.tags.includes(TAG.FREE));
 
   const browser = await puppeteer.launch();
@@ -61,6 +61,8 @@ const main = async () => {
   const deleteAudibleTagBooks: models.SimpleBook[] = [];
   const bunkos: models.NewBookDocument[] = [];
   const addBunkoTagBooks: models.SimpleBook[] = [];
+  const newerVersions: models.NewBookDocument[] = [];
+  const addNewerVersionTagBooks: models.SimpleBook[] = [];
   for (const toreadBook of toreadBooks) {
     try {
       let isbn10 = toreadBook.isbn;
@@ -77,13 +79,38 @@ const main = async () => {
       // いちおう5秒待つ
       await util.wait(5);
 
-      const hasKindleUnlimited = await searchKindleUnlimited(page);
-      const hasAudible = await searchAudible(page);
-
       const simpleBook = {
         documentId: toreadBook.documentId,
         updateAt: toreadBook.updateAt,
       };
+
+      const newerVersionIsbn10 = await getNewerVersionIsbn(page);
+      if (
+        newerVersionIsbn10 &&
+        !toreadBookIsbns.includes(newerVersionIsbn10) &&
+        !toreadBook.tags.includes(TAG.HAS_NEWER_VERSION)
+      ) {
+        addNewerVersionTagBooks.push(simpleBook);
+        newerVersions.push({
+          isbn: newerVersionIsbn10,
+          author_name: toreadBook.authorName || "",
+          book_name: toreadBook.bookName,
+          publish_date: "",
+          publisher_name: toreadBook.publisherName || "",
+          create_user: JOB_USER,
+          update_user: JOB_USER,
+          create_at: at,
+          update_at: at,
+          is_created_toread: false,
+        });
+
+        // 新版見つかった場合はそこで処理中断
+        continue;
+      }
+
+      const hasKindleUnlimited = await searchKindleUnlimited(page);
+      const hasAudible = await searchAudible(page);
+
       if (
         hasKindleUnlimited &&
         !toreadBook.tags.includes(TAG.KINDLE_UNLIMITED)
@@ -143,90 +170,10 @@ const main = async () => {
   await discordUtil.sendSearchAmazon(`【${yyyyMMdd}】Amazon検索！`);
   const promises: Promise<void>[] = [];
   await firestoreUtil.tran([
+    // newBookドキュメント追加
+    // 通知はタグ追加の際に送る
+    // 先にやっておくとpromisesの非同期処理を待ちながらタグ追加できる
     async (fs: firestoreUtil.FirestoreTransaction) => {
-      await sendSimpleBookAlertMsg(
-        addKindleUnlimitedTagBooks,
-        "キンドルアンリミテッドタグ追加",
-        toreadBooks
-      );
-      const params: models.SimpleBooksParams = {
-        idToken: "",
-        books: addKindleUnlimitedTagBooks,
-        tags: [TAG.KINDLE_UNLIMITED],
-        user: JOB_USER,
-      };
-      await models.addToreadTag(params, fs);
-
-      return {};
-    },
-    async (fs: firestoreUtil.FirestoreTransaction) => {
-      await sendSimpleBookAlertMsg(
-        deleteKindleUnlimitedTagBooks,
-        "キンドルアンリミテッドタグ削除",
-        toreadBooks
-      );
-
-      const params: models.SimpleBooksParams = {
-        idToken: "",
-        books: deleteKindleUnlimitedTagBooks,
-        tags: [TAG.KINDLE_UNLIMITED],
-        user: JOB_USER,
-      };
-      await models.deleteToreadTag(params, fs);
-      return {};
-    },
-    async (fs: firestoreUtil.FirestoreTransaction) => {
-      await sendSimpleBookAlertMsg(
-        addAudibleTagBooks,
-        "オーディブルタグ追加",
-        toreadBooks
-      );
-      const params: models.SimpleBooksParams = {
-        idToken: "",
-        books: addAudibleTagBooks,
-        tags: [TAG.AUDIBLE],
-        user: JOB_USER,
-      };
-      await models.addToreadTag(params, fs);
-      return {};
-    },
-    async (fs: firestoreUtil.FirestoreTransaction) => {
-      await sendSimpleBookAlertMsg(
-        deleteAudibleTagBooks,
-        "オーディブルタグ削除",
-        toreadBooks
-      );
-
-      const params: models.SimpleBooksParams = {
-        idToken: "",
-        books: deleteAudibleTagBooks,
-        tags: [TAG.AUDIBLE],
-        user: JOB_USER,
-      };
-      await models.deleteToreadTag(params, fs);
-      return {};
-    },
-
-    async (fs: firestoreUtil.FirestoreTransaction) => {
-      await sendSimpleBookAlertMsg(addBunkoTagBooks, "文庫発見", toreadBooks);
-
-      const params: models.SimpleBooksParams = {
-        idToken: "",
-        books: addBunkoTagBooks,
-        tags: [TAG.HAS_BUNKO],
-        user: JOB_USER,
-      };
-      await models.addToreadTag(params, fs);
-      if (addBunkoTagBooks.length > 0) {
-        await discordUtil.sendSearchAmazon(
-          `[Bookutilで新刊登録](${TOREAD_CREATE_NEW_BOOK_URL})`
-        );
-      }
-      return {};
-    },
-    async (fs: firestoreUtil.FirestoreTransaction) => {
-      // 文庫発見はタグ追加+newbookドキュメント追加
-      // 上でメッセ送ってるのでこっちではメッセ送らなくていい
       for (const bunko of bunkos) {
         promises.push(
           fs.createDocument(firestoreUtil.COLLECTION_PATH.T_NEW_BOOK, bunko)
@@ -234,6 +181,51 @@ const main = async () => {
       }
       return {};
     },
+    async (fs: firestoreUtil.FirestoreTransaction) => {
+      // 新版発見はタグ追加+newbookドキュメント追加
+      for (const newerVersion of newerVersions) {
+        promises.push(
+          fs.createDocument(
+            firestoreUtil.COLLECTION_PATH.T_NEW_BOOK,
+            newerVersion
+          )
+        );
+      }
+      return {};
+    },
+
+    // 各種タグの追加削除
+    addToreadTag(addBunkoTagBooks, TAG.HAS_BUNKO, "文庫発見", toreadBooks),
+    addToreadTag(
+      addNewerVersionTagBooks,
+      TAG.HAS_NEWER_VERSION,
+      "新版発見",
+      toreadBooks
+    ),
+    addToreadTag(
+      addKindleUnlimitedTagBooks,
+      TAG.KINDLE_UNLIMITED,
+      "キンドルアンリミテッドタグ追加",
+      toreadBooks
+    ),
+    deleteToreadTag(
+      deleteKindleUnlimitedTagBooks,
+      TAG.KINDLE_UNLIMITED,
+      "キンドルアンリミテッドタグ削除",
+      toreadBooks
+    ),
+    addToreadTag(
+      addAudibleTagBooks,
+      TAG.AUDIBLE,
+      "オーディブルタグ追加",
+      toreadBooks
+    ),
+    deleteToreadTag(
+      deleteAudibleTagBooks,
+      TAG.AUDIBLE,
+      "オーディブルタグ削除",
+      toreadBooks
+    ),
   ]);
 
   await Promise.all(promises);
@@ -260,6 +252,22 @@ const getBunkoIsbn = async (page: Page) => {
 
   return isbn || null;
 };
+const getNewerVersionIsbn = async (page: Page) => {
+  const newerVersionDiv = await page.$("#newer-version");
+
+  if (!newerVersionDiv) return null;
+
+  const link = await newerVersionDiv.$("a"); // aタグ取得
+  if (!link) return null;
+
+  // hrefからISBN取得
+  const href = await link.evaluate((node) => node.href);
+  if (!href) return null;
+  const isbn = href.split("/").find((piece) => util.isIsbn(piece));
+
+  return isbn || null;
+};
+
 const searchKindleUnlimited = async (page: Page) => {
   const kindleDiv = await page.$("#tmm-grid-swatch-KINDLE");
 
@@ -279,6 +287,42 @@ const searchAudible = async (page: Page) => {
   return audibleDiv !== null;
 };
 
+const addToreadTag = (
+  books: models.SimpleBook[],
+  tag: string,
+  msgTitle: string,
+  toreadBooks: models.ToreadBook[]
+) => {
+  return async (fs: firestoreUtil.FirestoreTransaction) => {
+    await sendSimpleBookAlertMsg(books, msgTitle, toreadBooks);
+    const params: models.SimpleBooksParams = {
+      idToken: "",
+      books: books,
+      tags: [tag],
+      user: JOB_USER,
+    };
+    await models.addToreadTag(params, fs);
+    return {};
+  };
+};
+const deleteToreadTag = (
+  books: models.SimpleBook[],
+  tag: string,
+  msgTitle: string,
+  toreadBooks: models.ToreadBook[]
+) => {
+  return async (fs: firestoreUtil.FirestoreTransaction) => {
+    await sendSimpleBookAlertMsg(books, msgTitle, toreadBooks);
+    const params: models.SimpleBooksParams = {
+      idToken: "",
+      books: books,
+      tags: [tag],
+      user: JOB_USER,
+    };
+    await models.deleteToreadTag(params, fs);
+    return {};
+  };
+};
 const sendSimpleBookAlertMsg = async (
   books: models.SimpleBook[],
   msgTitle: string,
