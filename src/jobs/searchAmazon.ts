@@ -26,6 +26,13 @@ const at = Timestamp.fromDate(new Date());
 const main = async () => {
   console.log("start");
 
+  // 通知自体のメッセージ
+  const yyyyMMdd = util.formatDateToStr(new Date(), "yyyy/MM/dd");
+  await discordUtil.sendSearchAmazon(
+    `【${yyyyMMdd}】Amazon検索を開始しました！
+なるべくよみたいリストを更新しないでください！`
+  );
+
   const data = (await firestoreUtil.tran([
     async (fs: firestoreUtil.FirestoreTransaction) => {
       const toreadBooks = await models.fetchToreadBooks(true, fs);
@@ -165,9 +172,7 @@ const main = async () => {
     }
   }
 
-  // 通知自体のメッセージ
-  const yyyyMMdd = util.formatDateToStr(new Date(), "yyyy/MM/dd");
-  await discordUtil.sendSearchAmazon(`【${yyyyMMdd}】Amazon検索！`);
+  await discordUtil.sendSearchAmazon(`Amazon検索が完了しました！`);
   const promises: Promise<void>[] = [];
   await firestoreUtil.tran([
     // newBookドキュメント追加
