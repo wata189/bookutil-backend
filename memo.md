@@ -3,7 +3,7 @@
 - デプロイ時
 
 ```
-gcloud run jobs deploy bookutilhogehoge
+gcloud run jobs create bookutilhogehoge --image asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilhogehoge:latest
 ```
 
 - 更新時
