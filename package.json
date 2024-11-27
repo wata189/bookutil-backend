@@ -17,6 +17,7 @@
     "APIサーバデプロイ": "npm-run-all setGcloudProject createDockerImage setTagToDockerImage pushDockerImage deployCloudRun",
     "図書館チェックデプロイ": "npm-run-all setGcloudProject createDockerImageCheckLibrary setTagToDockerImageCheckLibrary pushDockerImageCheckLibrary deployCloudRunCheckLibrary",
     "新刊通知デプロイ": "npm-run-all setGcloudProject createDockerImageAlertNewBook setTagToDockerImageAlertNewBook pushDockerImageAlertNewBook deployCloudRunAlertNewBook",
+    "Amazon検索デプロイ": "npm-run-all setGcloudProject createDockerImageSearchAmazon setTagToDockerImageSearchAmazon pushDockerImageSearchAmazon deployCloudRunSearchAmazon",
     "------↓モジュール------": "",
     "test": "npx env-cmd -f .env.dev npx jest",
     "clean": "rimraf dist",
@@ -34,7 +35,11 @@
     "createDockerImageAlertNewBook": "npm run test && docker-compose --env-file .env.prod -f docker-compose_alertNewBook.yml build",
     "setTagToDockerImageAlertNewBook": "docker tag bookutilalertnewbook asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilalertnewbook:v1 && docker tag bookutilalertnewbook asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilalertnewbook:latest",
     "pushDockerImageAlertNewBook": "docker push asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilalertnewbook:v1 && docker push asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilalertnewbook:latest",
-    "deployCloudRunAlertNewBook": "gcloud run jobs update bookutilalertnewbook --memory 512Mi --cpu 1"
+    "deployCloudRunAlertNewBook": "gcloud run jobs update bookutilalertnewbook --memory 512Mi --cpu 1",
+    "createDockerImageSearchAmazon": "npm run test && docker-compose --env-file .env.prod -f docker-compose_searchAmazon.yml build",
+    "setTagToDockerImageSearchAmazon": "docker tag bookutilsearchamazon asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilsearchamazon:v1 && docker tag bookutilsearchamazon asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilsearchamazon:latest",
+    "pushDockerImageSearchAmazon": "docker push asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilsearchamazon:v1 && docker push asia-docker.pkg.dev/bookutil/asia.gcr.io/bookutil/bookutilsearchamazon:latest",
+    "deployCloudRunSearchAmazon": "gcloud run jobs update bookutilsearchamazon --memory 512Mi --cpu 1"
   },
   "author": "",
   "license": "ISC",
