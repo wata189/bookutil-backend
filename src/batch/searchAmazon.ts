@@ -66,7 +66,6 @@ const main = async () => {
   const addKindleUnlimitedTagBooks: models.SimpleBook[] = [];
   const deleteKindleUnlimitedTagBooks: models.SimpleBook[] = [];
   const addAudibleTagBooks: models.SimpleBook[] = [];
-  const deleteAudibleTagBooks: models.SimpleBook[] = [];
   const bunkos: models.NewBookDocument[] = [];
   const addBunkoTagBooks: models.SimpleBook[] = [];
   const newerVersions: models.NewBookDocument[] = [];
@@ -132,8 +131,6 @@ const main = async () => {
       }
       if (hasAudible && !toreadBook.tags.includes(TAG.AUDIBLE)) {
         addAudibleTagBooks.push(simpleBook);
-      } else if (!hasAudible && toreadBook.tags.includes(TAG.AUDIBLE)) {
-        deleteAudibleTagBooks.push(simpleBook);
       }
 
       // 文庫検索
@@ -165,7 +162,6 @@ const main = async () => {
     if (
       addAudibleTagBooks.length > FIRESTORE_LIMIT ||
       addAudibleTagBooks.length > FIRESTORE_LIMIT ||
-      deleteAudibleTagBooks.length > FIRESTORE_LIMIT ||
       deleteKindleUnlimitedTagBooks.length > FIRESTORE_LIMIT ||
       bunkos.length > FIRESTORE_LIMIT
     ) {
@@ -224,12 +220,6 @@ const main = async () => {
       addAudibleTagBooks,
       TAG.AUDIBLE,
       "オーディブルタグ追加",
-      toreadBooks
-    ),
-    deleteToreadTag(
-      deleteAudibleTagBooks,
-      TAG.AUDIBLE,
-      "オーディブルタグ削除",
       toreadBooks
     ),
   ]);
