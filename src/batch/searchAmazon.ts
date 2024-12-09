@@ -4,6 +4,7 @@ import * as models from "../modules/models";
 import * as firestoreUtil from "../modules/firestoreUtil";
 import * as discordUtil from "../modules/discordUtil";
 import { Timestamp } from "firebase-admin/firestore";
+import nqdm from "nqdm";
 
 const AMZN_URL = "https://www.amazon.co.jp/dp/";
 
@@ -41,7 +42,7 @@ const main = async () => {
   ])) as { toreadBooks: models.ToreadBook[] };
 
   const toreadBookIsbns: string[] = [];
-  for (const toreadBook of data.toreadBooks) {
+  for (const toreadBook of nqdm(data.toreadBooks)) {
     if (toreadBook.isbn) {
       const isbn10 =
         toreadBook.isbn.length === 10
