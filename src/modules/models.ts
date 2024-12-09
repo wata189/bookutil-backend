@@ -396,7 +396,7 @@ export const fetchNewBooks = async (
       authorName: resultRow.author_name,
       publisherName: resultRow.publisher_name,
       publishDate: resultRow.publish_date.split("-").join("/"),
-      newBookCheckFlg: 1,
+      newBookCheckFlg: 0,
       updateAt: resultRow.update_at.seconds,
       tags: "",
       addTo: "",
