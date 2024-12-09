@@ -371,6 +371,7 @@ export type NewBookDocument = {
   book_name: string;
   publish_date: string;
   publisher_name: string;
+  tags: string;
   create_user: string;
   update_user: string;
   create_at: Timestamp;
@@ -398,7 +399,7 @@ export const fetchNewBooks = async (
       publishDate: resultRow.publish_date.split("-").join("/"),
       newBookCheckFlg: 0,
       updateAt: resultRow.update_at.seconds,
-      tags: "",
+      tags: resultRow.tags || "",
       addTo: "",
     };
   });

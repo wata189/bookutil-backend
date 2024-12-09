@@ -4,22 +4,11 @@ import * as firestoreUtil from "../modules/firestoreUtil";
 import ical from "node-ical";
 import * as util from "../modules/util";
 import * as discordUtil from "../modules/discordUtil";
+import * as models from "../modules/models";
 const CLIENT_URL = process.env.CLIENT_URL;
 const SINKAN_NET_ICAL = process.env.SINKAN_NET_ICAL || "";
 const TOREAD_CREATE_NEW_BOOK_URL = `${CLIENT_URL}/newbook`;
 
-type NewBookDocument = {
-  isbn: string;
-  author_name: string;
-  book_name: string;
-  publish_date: string;
-  publisher_name: string;
-  create_user: string;
-  update_user: string;
-  create_at: Timestamp;
-  update_at: Timestamp;
-  is_created_toread: boolean;
-};
 const discoverNewBook = async (fs: firestoreUtil.FirestoreTransaction) => {
   // icalを取得
   const calender = await ical.async.fromURL(SINKAN_NET_ICAL);
@@ -52,7 +41,7 @@ const discoverNewBook = async (fs: firestoreUtil.FirestoreTransaction) => {
   const user = "alert new book";
 
   // 新刊コレクションに登録されていないASINを抽出
-  const newBooks: NewBookDocument[] = [];
+  const newBooks: models.NewBookDocument[] = [];
   const uidExp = /^[A-Z]{2}[0-9]{9}[0-9X]/;
   for await (const event of events) {
     // ISBN切り出し
@@ -96,12 +85,13 @@ const discoverNewBook = async (fs: firestoreUtil.FirestoreTransaction) => {
     const bookName =
       "summary" in event && event.summary ? event.summary.toString() : "";
 
-    const newBook: NewBookDocument = {
+    const newBook: models.NewBookDocument = {
       isbn,
       author_name: authorName,
       book_name: bookName,
       publish_date: publishDate,
       publisher_name: publisherName,
+      tags: "",
       create_user: user,
       update_user: user,
       create_at: at,
