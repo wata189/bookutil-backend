@@ -24,64 +24,15 @@ type CheckResponse = {
   books: {
     [isbn: string]: {
       [libraryId: string]: {
-        libkey: string;
+        libkey: object;
         reserveurl: string;
       };
     };
   };
 };
-export const checkCalil = async (isbn: string, libraryId: string) => {
-  const result = {
-    isExist: false,
-    reserveUrl: "",
-  };
-  // カーリルでチェック
-  try {
-    //1回目の検索
-    let params: CheckParams | null = {
-      appkey: CALIL_APP_KEY,
-      isbn,
-      systemid: libraryId,
-      format: "json",
-      callback: "no",
-    };
-    while (params) {
-      const res: AxiosResponse<unknown, unknown> = await axios.get("/check", {
-        params,
-      });
-      const data = res.data as CheckResponse;
 
-      //continueの場合はセッション情報使ってもう一度処理する
-      if (data.continue) {
-        params = {
-          appkey: CALIL_APP_KEY,
-          session: data.session,
-          format: "json",
-          callback: "no",
-        };
-      } else {
-        //呼び出しが終了したら結果を格納
-        const calilBook = data.books[isbn][libraryId];
-        if (calilBook.libkey && Object.keys(calilBook.libkey).length > 0) {
-          result.isExist = true;
-          result.reserveUrl = calilBook.reserveurl;
-        }
-
-        // paramsを空にしてループ終了
-        params = null;
-      }
-    }
-  } catch (e) {
-    systemLogger.warn(e);
-  }
-  return result;
-};
-
-export const checkMultiCalil = async (isbn: string, libraryIds: string[]) => {
-  const result = {
-    isExist: false,
-    libraryId: "",
-  };
+const check = async (isbn: string, libraryIds: string[]) => {
+  let checkResponse: CheckResponse | null = null;
   // カーリルでチェック
   try {
     //1回目の検索
@@ -107,19 +58,76 @@ export const checkMultiCalil = async (isbn: string, libraryIds: string[]) => {
           callback: "no",
         };
       } else {
-        //呼び出しが終了したら結果を格納
-        for (const libraryId of libraryIds) {
-          const calilBook = data.books[isbn][libraryId];
-          if (calilBook.libkey && Object.keys(calilBook.libkey).length > 0) {
-            // 図書館の結果があったら結果だけ返して終了
-            result.isExist = true;
-            result.libraryId = libraryId;
-            break;
-          }
-        }
+        checkResponse = data;
 
         // paramsを空にしてループ終了
         params = null;
+      }
+    }
+  } catch (e) {
+    systemLogger.warn(e);
+  }
+  return checkResponse;
+};
+
+const NDL_LIB_ID = "Tokyo_NDL";
+const NDL_DIGITAL_COLLECTION_KEY = "デジタル";
+export const checkNdlDigitalCollection = async (isbn: string) => {
+  let isNdlDigitalCollectionExists = false;
+  // カーリルでチェック
+  try {
+    const checkResponse = await check(isbn, [NDL_LIB_ID]);
+    if (checkResponse) {
+      const calilBook = checkResponse.books[isbn][NDL_LIB_ID];
+
+      isNdlDigitalCollectionExists = Object.keys(calilBook.libkey).includes(
+        NDL_DIGITAL_COLLECTION_KEY
+      );
+    }
+  } catch (e) {
+    systemLogger.warn(e);
+  }
+  return isNdlDigitalCollectionExists;
+};
+
+export const checkCalil = async (isbn: string, libraryId: string) => {
+  const result = {
+    isExist: false,
+    reserveUrl: "",
+  };
+  // カーリルでチェック
+  try {
+    const checkResponse = await check(isbn, [libraryId]);
+    if (checkResponse) {
+      const calilBook = checkResponse.books[isbn][libraryId];
+      if (calilBook.libkey && Object.keys(calilBook.libkey).length > 0) {
+        result.isExist = true;
+        result.reserveUrl = calilBook.reserveurl;
+      }
+    }
+  } catch (e) {
+    systemLogger.warn(e);
+  }
+  return result;
+};
+
+export const checkMultiCalil = async (isbn: string, libraryIds: string[]) => {
+  const result = {
+    isExist: false,
+    libraryId: "",
+  };
+  // カーリルでチェック
+  try {
+    const checkResponse = await check(isbn, libraryIds);
+    if (checkResponse) {
+      for (const libraryId of libraryIds) {
+        const calilBook = checkResponse.books[isbn][libraryId];
+        if (calilBook.libkey && Object.keys(calilBook.libkey).length > 0) {
+          // 図書館の結果があったら結果だけ返して終了
+          result.isExist = true;
+          result.libraryId = libraryId;
+          break;
+        }
       }
     }
   } catch (e) {
