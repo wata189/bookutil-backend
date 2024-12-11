@@ -8,7 +8,7 @@ import nqdm from "nqdm";
 
 const AMZN_URL = "https://www.amazon.co.jp/dp/";
 
-const JOB_USER = "jobs/searchAmazon.ts";
+const JOB_USER = "batch/searchAmazon.ts";
 
 const TAG = {
   KINDLE_UNLIMITED: "キンドルアンリミテッド",
@@ -42,7 +42,7 @@ const main = async () => {
   ])) as { toreadBooks: models.ToreadBook[] };
 
   const toreadBookIsbns: string[] = [];
-  for (const toreadBook of nqdm(data.toreadBooks)) {
+  for (const toreadBook of data.toreadBooks) {
     if (toreadBook.isbn) {
       const isbn10 =
         toreadBook.isbn.length === 10
@@ -70,7 +70,7 @@ const main = async () => {
   const addBunkoTagBooks: models.SimpleBook[] = [];
   const newerVersions: models.NewBookDocument[] = [];
   const addNewerVersionTagBooks: models.SimpleBook[] = [];
-  for (const toreadBook of toreadBooks) {
+  for (const toreadBook of nqdm(data.toreadBooks)) {
     try {
       let isbn10 = toreadBook.isbn;
       if (!isbn10) {
