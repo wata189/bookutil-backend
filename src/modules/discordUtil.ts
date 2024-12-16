@@ -15,9 +15,14 @@ const axios = axiosBase.create({
 });
 
 const WAIT_SEC = 10;
+const MSG_MAX = 1950; // length2000字までなので多少バッファ込で1950
 const send = async (url: string, username: string, msg: string) => {
+  // 文字数上限にあわせてmsgあるていど減らす
+  const trimedMsg =
+    msg.length >= MSG_MAX ? msg.slice(0, MSG_MAX) + "\n(略)" : msg;
+
   systemLogger.info(`discord sendMsg: ${msg}`);
-  await axios.post(url, { username, content: msg });
+  await axios.post(url, { username, content: trimedMsg });
   await util.wait(WAIT_SEC);
 };
 

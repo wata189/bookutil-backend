@@ -18,7 +18,7 @@ const main = async () => {
 
   // 通知自体のメッセージ
   const yyyyMMdd = util.formatDateToStr(new Date(), "yyyy/MM/dd");
-  await discordUtil.sendSearchAmazon(
+  await discordUtil.sendCheckLibrary(
     `【${yyyyMMdd}】デジタルコレクション検索を開始しました！
 なるべくよみたいリストを更新しないでください！`
   );
@@ -72,7 +72,7 @@ const main = async () => {
     await util.wait(4);
   }
 
-  await discordUtil.sendSearchAmazon(
+  await discordUtil.sendCheckLibrary(
     `デジタルコレクション検索が完了しました！`
   );
 
@@ -142,7 +142,7 @@ const sendSimpleBookAlertMsg = async (
       return `- ${toreadBook?.authorName}『${toreadBook?.bookName}』`;
     })
     .join("\n");
-  await discordUtil.sendSearchAmazon(msg);
+  await discordUtil.sendCheckLibrary(msg);
 };
 
 main().then(() => {
