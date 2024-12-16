@@ -517,5 +517,40 @@ router.post(
   })
 );
 
+// bookshelfタグ追加
+router.post(
+  "/bookshelf/tag/add",
+  wrapAsyncMiddleware(async (req, res) => {
+    const params: models.SimpleBooksParams = req.body;
+    let isAuth = false;
+    const data: object = await firestoreUtil.tran([
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        isAuth = await authUtil.isAuth(params.idToken, fs);
+        //ログイン済みでなければログインエラー
+        validationUtil.isAuth(res, isAuth);
+        //パラメータチェック
+        validationUtil.isValidBooks(res, params);
+        //タグのパラメータチェック
+        validationUtil.isValidTag(res, params);
+        //ID存在チェック
+        await validationUtil.isExistBookshelfBooksId(res, params.books, fs);
+        //コンフリクトチェック
+        await validationUtil.isNotConflictBookshelfBooks(res, params.books, fs);
+
+        //DBで削除
+        await models.addBookshelfTag(params, fs);
+
+        return {};
+      },
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        const bookshelfBooks = await models.fetchBookshelfBooks(isAuth, fs);
+        return { bookshelfBooks };
+      },
+    ]);
+    res.status(util.STATUS_CODES.OK);
+    util.sendJson(res, "OK", data);
+  })
+);
+
 //routerをモジュールとして扱う準備
 export { router };
