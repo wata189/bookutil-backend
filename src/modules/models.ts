@@ -211,11 +211,6 @@ export type SimpleBooksParams = RequestParams & {
   tags?: string[];
   user: string;
 };
-export type BooksParams = RequestParams & {
-  books: SimpleBook[];
-  tags?: string[];
-  user: string;
-};
 export const deleteToreadBooks = async (
   books: SimpleBook[],
   fs: firestoreUtil.FirestoreTransaction
@@ -706,6 +701,22 @@ export const deleteBookshelfBook = async (
     firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK,
     params.documentId
   );
+};
+
+export const deleteBookshelfBooks = async (
+  books: SimpleBook[],
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  const promises = [];
+  for (const book of books) {
+    promises.push(
+      fs.deleteDocument(
+        firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK,
+        book.documentId
+      )
+    );
+  }
+  await Promise.all(promises);
 };
 
 export type CreateBooksParams = RequestParams & {

@@ -488,7 +488,7 @@ router.post(
 router.post(
   "/bookshelf/delete",
   wrapAsyncMiddleware(async (req, res) => {
-    const params: models.SimpleBookshelfBookParams = req.body;
+    const params: models.SimpleBooksParams = req.body;
     let isAuth = false;
     const data: object = await firestoreUtil.tran([
       async (fs: firestoreUtil.FirestoreTransaction) => {
@@ -496,19 +496,14 @@ router.post(
         //ログイン済みでなければログインエラー
         validationUtil.isAuth(res, isAuth);
         //パラメータチェック
-        validationUtil.isValidSimpleBookshelfBook(res, params);
+        validationUtil.isValidBooks(res, params);
         //ID存在チェック
-        await validationUtil.isExistBookshelfBookId(res, params.documentId, fs);
+        await validationUtil.isExistBookshelfBooksId(res, params.books, fs);
         //コンフリクトチェック
-        await validationUtil.isNotConflictBookshelfBook(
-          res,
-          params.documentId,
-          params.updateAt,
-          fs
-        );
+        await validationUtil.isNotConflictBookshelfBooks(res, params.books, fs);
 
         //DBで削除
-        await models.deleteBookshelfBook(params, fs);
+        await models.deleteBookshelfBooks(params.books, fs);
 
         return {};
       },

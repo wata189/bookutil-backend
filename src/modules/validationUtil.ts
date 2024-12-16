@@ -309,7 +309,10 @@ export const isNotConflictBook = async (
 };
 
 //複数選択の本のバリデーション
-export const isValidBooks = (res: Response, params: models.BooksParams) => {
+export const isValidBooks = (
+  res: Response,
+  params: models.SimpleBooksParams
+) => {
   try {
     throwInvalidParam(params.books, isExist);
     throwInvalidParam(params.books, isExistArray);
@@ -331,7 +334,7 @@ export const isValidBooks = (res: Response, params: models.BooksParams) => {
 };
 
 //タグ追加のバリデーション
-export const isValidTag = (res: Response, params: models.BooksParams) => {
+export const isValidTag = (res: Response, params: models.SimpleBooksParams) => {
   try {
     throwInvalidParam(params.tags, isExist);
     if (params.tags) {
@@ -586,6 +589,18 @@ export const isExistBookshelfBookId = async (
   }
 };
 
+export const isExistBookshelfBooksId = async (
+  res: Response,
+  books: models.SimpleBook[],
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  const promises = [];
+  for (const book of books) {
+    promises.push(isExistBookshelfBookId(res, book.documentId, fs));
+  }
+  await Promise.all(promises);
+};
+
 //コンフリクトチェック
 export const isNotConflictBookshelfBook = async (
   res: Response,
@@ -601,6 +616,20 @@ export const isNotConflictBookshelfBook = async (
       util.STATUS_CODES.CONFLICT
     );
   }
+};
+//コンフリクトチェック 複数
+export const isNotConflictBookshelfBooks = async (
+  res: Response,
+  books: models.SimpleBook[],
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  const promises = [];
+  for (const book of books) {
+    promises.push(
+      isNotConflictBookshelfBook(res, book.documentId, book.updateAt, fs)
+    );
+  }
+  await Promise.all(promises);
 };
 
 export const isValidSimpleBookshelfBook = async (
