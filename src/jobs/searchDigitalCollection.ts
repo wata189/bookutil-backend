@@ -37,14 +37,9 @@ const main = async () => {
     .filter((b) => !b.tags.includes(TAG.BOOK_WORKER))
     .filter((b) => !b.tags.includes(TAG.FREE));
 
-  let i = 0;
-  const total = toreadBooks.length;
   const addTagBooks: models.SimpleBook[] = [];
   const deleteTagBooks: models.SimpleBook[] = [];
   for (const toreadBook of toreadBooks) {
-    i++;
-    systemLogger.info(`${i}冊目/全${total}冊`);
-
     if (!toreadBook.isbn) {
       return;
     }
