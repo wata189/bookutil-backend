@@ -482,7 +482,7 @@ type Content = {
   contentName: string;
   rate: number;
 };
-type BookshelfBook = {
+export type BookshelfBook = {
   documentId: string | null;
   bookName: string;
   isbn: string | null;
