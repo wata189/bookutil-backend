@@ -13,6 +13,7 @@ export type NdlBook = {
   isbn: string | null;
   authorName: string | null;
   publisherName: string | null;
+  publishedMonth: string | null;
   coverUrl: string | null;
 };
 
@@ -29,6 +30,7 @@ type NdlItem = {
   "dc:identifier": DcIdentifire | DcIdentifire[] | null;
   "dc:creator": DcCreator | DcCreator[];
   "dc:publisher": { _text: string } | null;
+  "dc:date": { _text: string };
 };
 type NdlResponse = {
   rss: {
@@ -61,11 +63,26 @@ export const getNdlBook = async (isbn: string): Promise<NdlBook | null> => {
   return book;
 };
 
-export const searchNdlBooks = async (searchWord: string) => {
+export const searchNdlBooks = async (
+  bookName: string,
+  authorName: string,
+  publisherName: string
+) => {
   let ndlBooks: NdlBook[] = [];
-  // eslint-disable-next-line no-irregular-whitespace
-  const formatted = searchWord.replace(/　/g, " "); // 全角スペースあるとエラー出るので半角にする
-  const path = `/opensearch?any=${formatted}&cnt=50`;
+  const params = [];
+  if (bookName) {
+    // eslint-disable-next-line no-irregular-whitespace
+    params.push(`title=${bookName.replace(/　/g, " ")}`); // 全角スペースあるとエラー出るので半角にする
+  }
+  if (authorName) {
+    // eslint-disable-next-line no-irregular-whitespace
+    params.push(`creator=${authorName.replace(/　/g, " ")}`);
+  }
+  if (publisherName) {
+    // eslint-disable-next-line no-irregular-whitespace
+    params.push(`publisher=${publisherName.replace(/　/g, " ")}`);
+  }
+  const path = `/opensearch?${params.join("&")}&cnt=50`;
   console.log(`getNdlBooks:${path}`);
   try {
     const response = await axios.get(path);
@@ -154,11 +171,27 @@ const ndlItem2NdlBook = (ndlItem: NdlItem): NdlBook | null => {
       }
     }
 
-    let coverUrl = null;
-    if (isbn) {
-      coverUrl = getCoverUrl(isbn);
+    let publishedMonth = null;
+    const dcDate = ndlItem["dc:date"];
+    if (dcDate && dcDate._text) {
+      if (dcDate._text.length === 4) {
+        publishedMonth = dcDate._text;
+      } else {
+        // YYYY-MM とか YYYY-MM-DDをYYYY/MMにする
+        const yearMonth = dcDate._text.slice(0, 7);
+        publishedMonth = yearMonth.replace("-", "/");
+      }
     }
-    ndlBook = { isbn, ndlId, bookName, authorName, publisherName, coverUrl };
+
+    ndlBook = {
+      isbn,
+      ndlId,
+      bookName,
+      authorName,
+      publisherName,
+      coverUrl: null,
+      publishedMonth,
+    };
   } catch (error) {
     console.error(error);
   }

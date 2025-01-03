@@ -233,3 +233,11 @@ export const fullStr2Half = (str: string): string => {
     .map((char) => fullNum2HalfMap[char] || char)
     .join("");
 };
+
+export const splitArray = <T = object>(array: T[], n: number): T[][] => {
+  return array.reduce(
+    (acc: T[][], c, i: number) =>
+      i % n ? acc : [...acc, ...[array.slice(i, i + n)]],
+    []
+  );
+};
