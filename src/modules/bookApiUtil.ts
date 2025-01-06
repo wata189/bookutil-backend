@@ -1,5 +1,4 @@
 import * as ndlSearchUtil from "./ndlSearchUtil";
-import openBdUtil from "./openBdUtil";
 import axiosBase, { AxiosError } from "axios";
 import * as util from "./util";
 import * as models from "./models";
@@ -57,18 +56,6 @@ const init = async () => {
 };
 init();
 
-const isEnoughApiBook = (apiBook: ApiBook | null) => {
-  return (
-    apiBook &&
-    apiBook.bookName &&
-    apiBook.isbn &&
-    apiBook.authorName &&
-    apiBook.publisherName &&
-    apiBook.coverUrl &&
-    apiBook.publishedMonth
-  );
-};
-
 const findMasterPublisher = (isbn: string) => {
   // isbn10に変換
   const isbn10 = isbn.length === 10 ? isbn : util.isbn13To10(isbn);
@@ -97,43 +84,6 @@ export const getApiBook = async (isbn: string) => {
       };
       if (!apiBook.publisherName) {
         apiBook.publisherName = masterPublisherName;
-      }
-    }
-  } catch (e) {
-    console.error(e);
-  }
-
-  if (isEnoughApiBook(apiBook)) return apiBook;
-
-  try {
-    // 3.openBD
-    const openBdBook = await openBdUtil.getBookInfo(isbn);
-    if (openBdBook) {
-      if (apiBook) {
-        if (!apiBook.bookName) {
-          apiBook.bookName = openBdBook.bookName;
-        }
-        if (!apiBook.isbn) {
-          apiBook.isbn = openBdBook.isbn;
-        }
-        if (!apiBook.authorName) {
-          apiBook.authorName = openBdBook.authorName;
-        }
-        if (!apiBook.publisherName) {
-          apiBook.publisherName = openBdBook.publisherName;
-        }
-        if (!apiBook.coverUrl) {
-          apiBook.coverUrl = openBdBook.coverUrl;
-        }
-        if (!apiBook.publishedMonth) {
-          apiBook.publishedMonth = openBdBook.publishedMonth;
-        }
-      } else {
-        apiBook = {
-          ...openBdBook,
-          memo: null,
-          isOnKadokawa,
-        };
       }
     }
   } catch (e) {

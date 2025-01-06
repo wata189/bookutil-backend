@@ -13,7 +13,7 @@
     "------↓バッチ実行----": "",
     "Amazon検索": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/searchAmazon.js",
     "タグ削除": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/deleteTag.js 脳科学",
-    "本番環境バッチ実行": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/ほげほげ.js",
+    "本番環境バッチ実行": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/setPublishData.js",
     "------↓CloudRunデプロイ------": "",
     "APIサーバデプロイ": "npm-run-all setGcloudProject createDockerImage setTagToDockerImage pushDockerImage deployCloudRun",
     "図書館チェックデプロイ": "npm-run-all setGcloudProject createDockerImageCheckLibrary setTagToDockerImageCheckLibrary pushDockerImageCheckLibrary deployCloudRunCheckLibrary",

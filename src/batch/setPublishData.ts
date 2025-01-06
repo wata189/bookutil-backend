@@ -45,14 +45,14 @@ const main = async () => {
     if (updatedBook) {
       updatedToreadBookParams.push(updatedBook);
     }
-    await util.wait(10);
+    await util.wait(3);
   }
   for (const book of nqdm(bookshelfBooks)) {
     const updatedBook = await updateBookshelfBook(book);
     if (updatedBook) {
       updatedBookshelfBookParams.push(updatedBook);
     }
-    await util.wait(10);
+    await util.wait(3);
   }
   const updateFunc: ((
     fs: firestoreUtil.FirestoreTransaction
@@ -117,7 +117,7 @@ const updateBookshelfBook = async (
     params.coverUrl = apiBook.coverUrl;
   }
   if (apiBook.memo && !params.memo) {
-    params.memo = apiBook.memo;
+    params.memo = apiBook.memo || null;
   }
   return params;
 };
@@ -149,7 +149,7 @@ const updateToreadBook = async (
     params.coverUrl = apiBook.coverUrl;
   }
   if (apiBook.memo && !params.memo) {
-    params.memo = apiBook.memo;
+    params.memo = apiBook.memo || null;
   }
 
   if (

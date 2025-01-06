@@ -678,7 +678,7 @@ const bookshelfBookParamsToDocument = (
     published_month: params.publishedMonth,
     cover_url: params.coverUrl,
     tags: params.tags,
-    memo: params.memo,
+    memo: params.memo || null,
     read_date: params.readDate,
     rate: params.rate,
     contents: contents,
