@@ -751,3 +751,27 @@ export const fetchPublishers = async (
     };
   });
 };
+
+export type DLibrary = {
+  documentId: string;
+  name: string;
+  checkUrl: string;
+  openUrl: string;
+  beforeHash: string;
+};
+export const fetchDLibrary = async (
+  fs: firestoreUtil.FirestoreTransaction
+): Promise<DLibrary> => {
+  const result = await fs.getCollection(
+    firestoreUtil.COLLECTION_PATH.M_D_LIBRARY
+  );
+  return result.map((resultRow) => {
+    return {
+      documentId: resultRow.documentId,
+      name: resultRow.name,
+      checkUrl: resultRow.check_url,
+      openUrl: resultRow.open_url,
+      beforeHash: resultRow.before_hash,
+    };
+  })[0];
+};
