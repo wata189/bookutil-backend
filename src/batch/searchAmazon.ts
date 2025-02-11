@@ -70,7 +70,7 @@ const main = async () => {
   const addBunkoTagBooks: models.SimpleBook[] = [];
   const newerVersions: models.NewBookDocument[] = [];
   const addNewerVersionTagBooks: models.SimpleBook[] = [];
-  for (const toreadBook of nqdm(data.toreadBooks)) {
+  for (const toreadBook of nqdm(toreadBooks)) {
     try {
       let isbn10 = toreadBook.isbn;
       if (!isbn10) {
