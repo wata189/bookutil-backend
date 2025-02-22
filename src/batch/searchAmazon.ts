@@ -70,7 +70,7 @@ const main = async () => {
   const addBunkoTagBooks: models.SimpleBook[] = [];
   const newerVersions: models.NewBookDocument[] = [];
   const addNewerVersionTagBooks: models.SimpleBook[] = [];
-  for (const toreadBook of nqdm(data.toreadBooks)) {
+  for (const toreadBook of nqdm(toreadBooks)) {
     try {
       let isbn10 = toreadBook.isbn;
       if (!isbn10) {
@@ -172,32 +172,7 @@ const main = async () => {
   }
 
   await discordUtil.sendSearchAmazon(`Amazon検索が完了しました！`);
-  const promises: Promise<void>[] = [];
   await firestoreUtil.tran([
-    // newBookドキュメント追加
-    // 通知はタグ追加の際に送る
-    // 先にやっておくとpromisesの非同期処理を待ちながらタグ追加できる
-    async (fs: firestoreUtil.FirestoreTransaction) => {
-      for (const bunko of bunkos) {
-        promises.push(
-          fs.createDocument(firestoreUtil.COLLECTION_PATH.T_NEW_BOOK, bunko)
-        );
-      }
-      return {};
-    },
-    async (fs: firestoreUtil.FirestoreTransaction) => {
-      // 新版発見はタグ追加+newbookドキュメント追加
-      for (const newerVersion of newerVersions) {
-        promises.push(
-          fs.createDocument(
-            firestoreUtil.COLLECTION_PATH.T_NEW_BOOK,
-            newerVersion
-          )
-        );
-      }
-      return {};
-    },
-
     // 各種タグの追加削除
     addToreadTag(addBunkoTagBooks, TAG.HAS_BUNKO, "文庫発見", toreadBooks),
     addToreadTag(
@@ -225,8 +200,6 @@ const main = async () => {
       toreadBooks
     ),
   ]);
-
-  await Promise.all(promises);
 };
 
 const getBunkoIsbn = async (page: Page) => {
