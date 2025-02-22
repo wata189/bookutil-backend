@@ -12,7 +12,7 @@
     "ローカルDocker": "docker compose --env-file .env.dev -f docker-compose_webapi_dev.yml build && docker container run --rm -p 8080:8080 --init --name bookutilapidev bookutilapidev",
     "------↓バッチ実行----": "",
     "Amazon検索": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/searchAmazon.js",
-    "タグ削除": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/deleteTag.js 脳科学",
+    "タグ削除": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/deleteTag.js 翔泳社",
     "本番環境バッチ実行": "npm run test && npm run build && npx env-cmd -f .env.prod node dist/batch/gzbrain2mediaworks.js",
     "------↓CloudRunデプロイ------": "",
     "APIサーバデプロイ": "npm-run-all setGcloudProject createDockerImage setTagToDockerImage pushDockerImage deployCloudRun",

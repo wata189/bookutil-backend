@@ -5,14 +5,8 @@ import * as models from "../modules/models";
 import { checkCalil } from "../modules/calilUtil";
 import * as discordUtil from "../modules/discordUtil";
 
-import axios from "axios";
-import * as cheerio from "cheerio";
-import crypto from "crypto";
-import { Timestamp } from "firebase-admin/firestore";
-
 const JOB_USER = "job/checkLibrary.ts";
 const CLIENT_URL = process.env.CLIENT_URL;
-const SALT = "salt";
 
 const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
   // newBookCheckFlg立ってる図書館を取得
@@ -98,46 +92,6 @@ const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
   return {};
 };
 
-// 電子図書館情報
-const checkDLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
-  const dLibrary: models.DLibrary = await models.fetchDLibrary(fs);
-  // 新着情報を取得
-  const response = await axios.get(dLibrary.checkUrl);
-  const cheerioData = cheerio.load(response.data);
-  const titles: string[] = [];
-  cheerioData(".book_info .booktitle").each((i, el) => {
-    const title = cheerioData(el).text();
-    titles.push(title);
-  });
-
-  // ハッシュ化して前回のものと異なるか確認
-  const joinedTitles = titles.join("").trim();
-  const tmpHash = crypto
-    .createHash("sha256")
-    .update(joinedTitles + SALT)
-    .digest("hex");
-  if (tmpHash !== dLibrary.beforeHash) {
-    // 異なる場合通知送信
-    const yyyyMMdd = util.formatDateToStr(new Date(), "yyyy/MM/dd");
-    const msg = `【${yyyyMMdd}】${dLibrary.name}に新着資料があるかもしれません
-[新着資料画面を開く](${dLibrary.openUrl})`;
-    await discordUtil.sendCheckLibrary(msg);
-  }
-
-  // 今回の情報で更新
-  const updateParams = {
-    before_hash: tmpHash,
-    update_at: Timestamp.fromDate(new Date()),
-    update_user: "job/checkDLibrary.ts",
-  };
-  await fs.updateDocument(
-    firestoreUtil.COLLECTION_PATH.M_D_LIBRARY,
-    dLibrary.documentId,
-    updateParams
-  );
-  return {};
-};
-
 const searchCheckNewBookLibraries = async (
   fs: firestoreUtil.FirestoreTransaction
 ) => {
@@ -156,7 +110,7 @@ const searchCheckNewBookToreadBooks = async (
 // Define main script
 const main = async () => {
   systemLogger.info("checkLibrary start");
-  await firestoreUtil.tran([checkLibrary, checkDLibrary]);
+  await firestoreUtil.tran([checkLibrary]);
   systemLogger.info("checkLibrary end");
 };
 
