@@ -20,7 +20,7 @@
     "新刊通知デプロイ": "npm-run-all setGcloudProject createDockerImageAlertNewBook setTagToDockerImageAlertNewBook pushDockerImageAlertNewBook deployCloudRunAlertNewBook",
     "DC検索デプロイ": "npm-run-all setGcloudProject createDockerImageSearchDc setTagToDockerImageSearchDc pushDockerImageSearchDc deployCloudRunSearchDc",
     "------↓モジュール------": "",
-    "test": "npx env-cmd -f .env.dev npx jest",
+    "test": "npm audit fix && npx env-cmd -f .env.dev npx jest",
     "clean": "rimraf dist",
     "tsc": "tsc",
     "build": "npm-run-all clean tsc",
