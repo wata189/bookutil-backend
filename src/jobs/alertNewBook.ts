@@ -45,7 +45,7 @@ const discoverNewBook = async (fs: firestoreUtil.FirestoreTransaction) => {
   const uidExp = /^[A-Z]{2}[0-9]{9}[0-9X]/;
   for await (const event of events) {
     // ISBN切り出し
-    let isbn = "dummy";
+    let isbn = "";
     if ("uid" in event && event.uid && uidExp.test(event.uid?.toString())) {
       const uid = event.uid?.toString();
       const uidIsbn = uid.slice(2).replace("@sinkan.net", "");
@@ -55,15 +55,17 @@ const discoverNewBook = async (fs: firestoreUtil.FirestoreTransaction) => {
     }
 
     // t_new_bookにあったら発見済なのでループ飛ばす
-    const dbNewBook = await fs.getCollection(
-      firestoreUtil.COLLECTION_PATH.T_NEW_BOOK,
-      "isbn",
-      "isbn",
-      "==",
-      isbn
-    );
-    if (dbNewBook.length > 0) {
-      continue;
+    if (isbn) {
+      const dbNewBook = await fs.getCollection(
+        firestoreUtil.COLLECTION_PATH.T_NEW_BOOK,
+        "isbn",
+        "isbn",
+        "==",
+        isbn
+      );
+      if (dbNewBook.length > 0) {
+        continue;
+      }
     }
 
     //本情報加工
