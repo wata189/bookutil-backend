@@ -280,6 +280,16 @@ export const addBookshelfTag = async (
   await Promise.all(promises);
 };
 
+const ignoreTags = [
+  "ブックウォーカー",
+  "無料",
+  "オーディブル",
+  "キンドルアンリミテッド",
+  "アプリ",
+  "新宿区電子図書館",
+  "デジタルコレクション",
+];
+
 export const addWantTag = async (
   res: Response,
   params: SimpleBookParams,
@@ -296,29 +306,38 @@ export const addWantTag = async (
     );
     return;
   }
-  const libraryTag = await findLibraryTag(book.isbn, fs);
-  if (!libraryTag) {
-    // 本が図書館にないエラー
-    errorUtil.throwError(
-      res,
-      "本が図書館にありません",
-      util.STATUS_CODES.INTERNAL_SERVER_ERROR
-    );
-    return;
+
+  let updateTags: string[] = book.tags;
+  if (!updateTags.includes(TAG_WANT)) {
+    updateTags.push(TAG_WANT);
   }
-  const wantTags = [libraryTag];
-  // よみたいタグが登録されていない場合はよみたいタグも一緒に追加
-  const bookTags: string[] = book.tags;
-  if (!bookTags.includes(TAG_WANT)) {
-    wantTags.push(TAG_WANT);
+
+  const hasIgnoreTag =
+    ignoreTags.filter((t) => updateTags.includes(t)).length > 0;
+  if (!hasIgnoreTag) {
+    const libraryTag = await findLibraryTag(book.isbn, fs);
+    if (!libraryTag) {
+      // 本が図書館にないエラー
+      errorUtil.throwError(
+        res,
+        "本が図書館にありません",
+        util.STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
+      return;
+    }
+    updateTags = updateTags.filter((tag) => !tag.includes("図書館"));
+    updateTags.push(libraryTag);
   }
 
   //DBに格納
-  await fs.addArray(
+  await fs.updateDocument(
     firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK,
     book.documentId,
-    "tags",
-    wantTags
+    {
+      tags: updateTags,
+      update_user: params.user,
+      update_at: Timestamp.fromDate(new Date()),
+    }
   );
 
   return;
