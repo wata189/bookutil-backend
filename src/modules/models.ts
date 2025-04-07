@@ -7,9 +7,23 @@ import { Response } from "express";
 
 const TAG_WANT = "よみたい";
 
+export type Library = {
+  id: string;
+  city: string;
+  name: string;
+  closestStation: string | null;
+  url: string;
+  mapUrl: string;
+  newBookCheckFlg: 0 | 1;
+  orderNum: number;
+  checkLibraryOrderNum: number;
+  spUrl: string | null;
+  calendarUrl: string;
+  barcodeUrl: string | null;
+};
 export const fetchLibraries = async (
   fs: firestoreUtil.FirestoreTransaction
-) => {
+): Promise<Library[]> => {
   const result = await fs.getCollection(
     firestoreUtil.COLLECTION_PATH.M_LIBRARY,
     "order_num"
