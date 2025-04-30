@@ -7,6 +7,7 @@ import { checkCalil } from "../modules/calilUtil";
 
 const JOB_USER = "batch/updateLibraryPriority.ts";
 import nqdm from "nqdm";
+const FIRESTORE_TRANSACTION_LIMIT = 495;
 
 const main = async () => {
   systemLogger.log("start");
@@ -30,7 +31,7 @@ const main = async () => {
     .filter((b) => b.tags.includes("よみたい")) // よみたいだけ
     .filter((b) => b.tags.join("/").includes("図書館")) // 図書館タグついているものだけ
     .filter((b) => !b.tags.includes("新宿区電子図書館")) // 電子図書館タグ入は除外
-    .filter((b) => !b.tags.includes("新宿区図書館")) // 優先度変わらない図書館のタグ入は除外
+    .filter((b) => !b.tags.includes("新宿区図書館")) // TODO:優先度変わらない図書館のタグ入は除外
     .filter((b) => !b.tags.includes("渋谷区図書館"))
     .filter((b) => !b.tags.includes("千代田区図書館"));
 
@@ -66,34 +67,40 @@ const main = async () => {
     systemLogger.warn(e);
   }
 
-  await firestoreUtil.tran([
-    async (fs: firestoreUtil.FirestoreTransaction) => {
-      for await (const searchResult of searchResults) {
-        const library = searchResult.library;
-        const book = searchResult.book;
-        // タグ更新
-        // 図書館未定タグと図書館タグすべてけす
-        // 「図書館」という文字列が入るタグを削除すればよい
-        const updateTags = book.tags.filter((tag) => !tag.includes("図書館"));
-        // 今の図書館タグ追加する
-        updateTags.push(library.city + "図書館");
-        updateTags.push("よみたい");
+  // 500件ずつにトランザクションを分割する
+  for (const splitedResults of util.splitArray(
+    searchResults,
+    FIRESTORE_TRANSACTION_LIMIT
+  )) {
+    await firestoreUtil.tran([
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        for await (const searchResult of splitedResults) {
+          const library = searchResult.library;
+          const book = searchResult.book;
+          // タグ更新
+          // 図書館未定タグと図書館タグすべてけす
+          // 「図書館」という文字列が入るタグを削除すればよい
+          const updateTags = book.tags.filter((tag) => !tag.includes("図書館"));
+          // 今の図書館タグ追加する
+          updateTags.push(library.city + "図書館");
+          updateTags.push("よみたい");
 
-        //DB更新
-        const bookParams: models.BookParams = {
-          ...book,
-          user: JOB_USER, //更新ユーザーは独自のものにする
-          idToken: "",
-          isExternalCooperation: true,
-        };
-        // 更新タグは重複消す
-        bookParams.tags = util.removeDuplicateElements(updateTags);
+          //DB更新
+          const bookParams: models.BookParams = {
+            ...book,
+            user: JOB_USER, //更新ユーザーは独自のものにする
+            idToken: "",
+            isExternalCooperation: true,
+          };
+          // 更新タグは重複消す
+          bookParams.tags = util.removeDuplicateElements(updateTags);
 
-        await models.updateToreadBook(book.documentId, bookParams, fs);
-      }
-      return {};
-    },
-  ]);
+          await models.updateToreadBook(book.documentId, bookParams, fs);
+        }
+        return {};
+      },
+    ]);
+  }
 
   await discordUtil.sendSearchAmazon(
     `図書館優先度アップデートが完了しました！`
