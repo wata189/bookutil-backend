@@ -9,6 +9,24 @@ const JOB_USER = "batch/updateLibraryPriority.ts";
 import nqdm from "nqdm";
 const FIRESTORE_TRANSACTION_LIMIT = 495;
 
+const IS_BEFORE_MOVING = true; // TODO:引越し前フラグ
+
+type updateLibrary = {
+  id: string;
+  city: string;
+};
+const LIBRARIES: updateLibrary[] = [
+  { id: "Tokyo_Shinjuku", city: "新宿区" },
+  { id: "Tokyo_Bunkyo", city: "文京区" },
+  { id: "Tokyo_Chiyoda", city: "千代田区" },
+  { id: "Tokyo_Taito", city: "台東区" },
+  { id: "Tokyo_Nakano", city: "中野区" },
+  { id: "Tokyo_Shibuya", city: "渋谷区" },
+  { id: "Tokyo_Minato", city: "港区" },
+  { id: "Tokyo_Toshima", city: "豊島区" },
+  { id: "Tokyo_NDL", city: "国会" },
+];
+
 const main = async () => {
   systemLogger.log("start");
 
@@ -21,23 +39,20 @@ const main = async () => {
   const data = (await firestoreUtil.tran([
     async (fs: firestoreUtil.FirestoreTransaction) => {
       const toreadBooks = await models.fetchToreadBooks(true, fs);
-      const libraries = await models.fetchLibraries(fs);
-      return { toreadBooks, libraries };
+      return { toreadBooks };
     },
-  ])) as { toreadBooks: models.ToreadBook[]; libraries: models.Library[] };
+  ])) as { toreadBooks: models.ToreadBook[] };
 
   const toreadBooks = data.toreadBooks
     .filter((b) => b.isbn) // isbnあるものだけ
     .filter((b) => b.tags.includes("よみたい")) // よみたいだけ
     .filter((b) => b.tags.join("/").includes("図書館")) // 図書館タグついているものだけ
     .filter((b) => !b.tags.includes("新宿区電子図書館")) // 電子図書館タグ入は除外
-    .filter((b) => !b.tags.includes("新宿区図書館")) // TODO:優先度変わらない図書館のタグ入は除外
-    .filter((b) => !b.tags.includes("渋谷区図書館"))
-    .filter((b) => !b.tags.includes("千代田区図書館"));
+    .filter((b) => !b.tags.includes("新宿区図書館")); // TODO:優先度変わらない図書館のタグ入は除外
 
   type SearchResult = {
     book: models.ToreadBook;
-    library: models.Library;
+    library: updateLibrary;
     reserveUrl: string;
   };
   const searchResults: SearchResult[] = [];
@@ -45,7 +60,7 @@ const main = async () => {
     // 図書館×本で検索 break・continueを使う関係でfor awaitで同期処理
     for await (const book of nqdm(toreadBooks)) {
       if (!book.isbn) continue;
-      for (const library of data.libraries) {
+      for (const library of LIBRARIES) {
         // カーリル処理
         const calilResult = await checkCalil(book.isbn, library.id);
 
@@ -64,6 +79,9 @@ const main = async () => {
     }
   } catch (e) {
     // エラーキャッチ（たぶんAPI上限）したらそこまでの部分をDB登録
+    await discordUtil.sendSearchAmazon(
+      `エラー発生のため最後まで処理が完了していません`
+    );
     systemLogger.warn(e);
   }
 
@@ -78,11 +96,18 @@ const main = async () => {
           const library = searchResult.library;
           const book = searchResult.book;
           // タグ更新
-          // 図書館未定タグと図書館タグすべてけす
-          // 「図書館」という文字列が入るタグを削除すればよい
-          const updateTags = book.tags.filter((tag) => !tag.includes("図書館"));
+          let updateTags: string[] = [];
+          if (IS_BEFORE_MOVING) {
+            updateTags = book.tags.filter((tag) => tag != "図書館未定");
+          } else {
+            // 引越し後の場合は図書館未定タグと図書館タグすべてけす
+            updateTags = book.tags.filter((tag) => !tag.includes("図書館"));
+          }
+
           // 今の図書館タグ追加する
-          updateTags.push(library.city + "図書館");
+          const libTag =
+            library.city + (IS_BEFORE_MOVING ? "引越後" : "") + "図書館";
+          updateTags.push(libTag);
           updateTags.push("よみたい");
 
           //DB更新
