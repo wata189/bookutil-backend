@@ -160,46 +160,76 @@ const main = async () => {
       console.error(e);
       continue;
     }
-
-    if (
-      addAudibleTagBooks.length > FIRESTORE_LIMIT ||
-      addAudibleTagBooks.length > FIRESTORE_LIMIT ||
-      deleteKindleUnlimitedTagBooks.length > FIRESTORE_LIMIT ||
-      bunkos.length > FIRESTORE_LIMIT
-    ) {
-      break;
-    }
   }
 
   await discordUtil.sendSearchAmazon(`Amazon検索が完了しました！`);
-  await firestoreUtil.tran([
-    // 各種タグの追加削除
-    addToreadTag(addBunkoTagBooks, TAG.HAS_BUNKO, "文庫発見", toreadBooks),
-    addToreadTag(
-      addNewerVersionTagBooks,
-      TAG.HAS_NEWER_VERSION,
-      "新版発見",
-      toreadBooks
-    ),
-    addToreadTag(
-      addKindleUnlimitedTagBooks,
-      TAG.KINDLE_UNLIMITED,
-      "キンドルアンリミテッドタグ追加",
-      toreadBooks
-    ),
-    deleteToreadTag(
-      deleteKindleUnlimitedTagBooks,
-      TAG.KINDLE_UNLIMITED,
-      "キンドルアンリミテッドタグ削除",
-      toreadBooks
-    ),
-    addToreadTag(
-      addAudibleTagBooks,
-      TAG.AUDIBLE,
-      "オーディブルタグ追加",
-      toreadBooks
-    ),
-  ]);
+  // 各種タグの追加削除
+  for (const splitedAddBunkoTagBooks of util.splitArray(
+    addBunkoTagBooks,
+    FIRESTORE_LIMIT
+  )) {
+    await firestoreUtil.tran([
+      addToreadTag(
+        splitedAddBunkoTagBooks,
+        TAG.HAS_BUNKO,
+        "文庫発見",
+        toreadBooks
+      ),
+    ]);
+  }
+  for (const splitedAddNewerVersionTagBook of util.splitArray(
+    addNewerVersionTagBooks,
+    FIRESTORE_LIMIT
+  )) {
+    await firestoreUtil.tran([
+      addToreadTag(
+        splitedAddNewerVersionTagBook,
+        TAG.HAS_NEWER_VERSION,
+        "新版発見",
+        toreadBooks
+      ),
+    ]);
+  }
+  for (const splitedAddKindleUnlimitedTagBooks of util.splitArray(
+    addKindleUnlimitedTagBooks,
+    FIRESTORE_LIMIT
+  )) {
+    await firestoreUtil.tran([
+      addToreadTag(
+        splitedAddKindleUnlimitedTagBooks,
+        TAG.KINDLE_UNLIMITED,
+        "キンドルアンリミテッドタグ追加",
+        toreadBooks
+      ),
+    ]);
+  }
+  for (const splitedDeleteKindleUnlimitedTagBooks of util.splitArray(
+    deleteKindleUnlimitedTagBooks,
+    FIRESTORE_LIMIT
+  )) {
+    await firestoreUtil.tran([
+      deleteToreadTag(
+        splitedDeleteKindleUnlimitedTagBooks,
+        TAG.KINDLE_UNLIMITED,
+        "キンドルアンリミテッドタグ削除",
+        toreadBooks
+      ),
+    ]);
+  }
+
+  for (const splitedAddAudibleTagBooks of util.splitArray(
+    addAudibleTagBooks,
+    FIRESTORE_LIMIT
+  )) {
+    await firestoreUtil.tran([
+      addToreadTag(
+        splitedAddAudibleTagBooks,
+        TAG.AUDIBLE,
+        "オーディブルタグ追加",
+        toreadBooks
+      ),
+    ]);
+  }
 };
 
 const getBunkoIsbn = async (page: Page) => {
