@@ -20,7 +20,6 @@ const TAG = {
 };
 
 const FIRESTORE_LIMIT = 495;
-const ALERT_MSG_LIMIT = "(500件に近いため中断があります)";
 
 const at = Timestamp.fromDate(new Date());
 
@@ -83,8 +82,8 @@ const main = async () => {
       const url = AMZN_URL + isbn10;
       await page.goto(url);
 
-      // いちおう5秒待つ
-      await util.wait(5);
+      // いちおう10秒待つ
+      await util.wait(10);
 
       const simpleBook = {
         documentId: toreadBook.documentId,
@@ -173,7 +172,7 @@ const main = async () => {
         splitedAddBunkoTagBooks,
         TAG.HAS_BUNKO,
         "文庫発見",
-        toreadBooks
+        data.toreadBooks
       ),
     ]);
   }
@@ -186,7 +185,7 @@ const main = async () => {
         splitedAddNewerVersionTagBook,
         TAG.HAS_NEWER_VERSION,
         "新版発見",
-        toreadBooks
+        data.toreadBooks
       ),
     ]);
   }
@@ -199,7 +198,7 @@ const main = async () => {
         splitedAddKindleUnlimitedTagBooks,
         TAG.KINDLE_UNLIMITED,
         "キンドルアンリミテッドタグ追加",
-        toreadBooks
+        data.toreadBooks
       ),
     ]);
   }
@@ -212,7 +211,7 @@ const main = async () => {
         splitedDeleteKindleUnlimitedTagBooks,
         TAG.KINDLE_UNLIMITED,
         "キンドルアンリミテッドタグ削除",
-        toreadBooks
+        data.toreadBooks
       ),
     ]);
   }
@@ -226,7 +225,7 @@ const main = async () => {
         splitedAddAudibleTagBooks,
         TAG.AUDIBLE,
         "オーディブルタグ追加",
-        toreadBooks
+        data.toreadBooks
       ),
     ]);
   }
@@ -340,9 +339,6 @@ const sendSimpleBookAlertMsg = async (
     })
     .join("\n");
   await discordUtil.sendSearchAmazon(msg);
-  if (books.length > FIRESTORE_LIMIT) {
-    await discordUtil.sendSearchAmazon(ALERT_MSG_LIMIT);
-  }
 };
 
 main().then(() => {
