@@ -17,6 +17,7 @@ const TAG = {
   FREE: "無料",
   HAS_BUNKO: "文庫あり",
   HAS_NEWER_VERSION: "新版あり",
+  AOZORA: "青空文庫"
 };
 
 const FIRESTORE_LIMIT = 495;
@@ -55,7 +56,8 @@ const main = async () => {
     .filter((b) => b.isbn) // isbnあるものだけ
     // ブックウォーカー・無料タグは除外
     .filter((b) => !b.tags.includes(TAG.BOOK_WORKER))
-    .filter((b) => !b.tags.includes(TAG.FREE));
+    .filter((b) => !b.tags.includes(TAG.FREE))
+    .filter((b) => !b.tags.includes(TAG.AOZORA));
 
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
@@ -82,8 +84,8 @@ const main = async () => {
       const url = AMZN_URL + isbn10;
       await page.goto(url);
 
-      // いちおう10秒待つ
-      await util.wait(10);
+      // いちおう5秒待つ
+      await util.wait(5);
 
       const simpleBook = {
         documentId: toreadBook.documentId,
