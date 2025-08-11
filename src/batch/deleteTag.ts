@@ -3,8 +3,13 @@
 
 import { program } from "commander";
 // コマンドライン引数をcommanderでパースする
-program.parse(process.argv);
+program
+  .option("--delete-bookshelf", "delete tag from bookshelf books", false)
+  .parse(process.argv);
+
 const deleteTag = program.args[0];
+const deleteBookshelf: boolean = program.opts().deleteBookshelf;
+
 if (!deleteTag) {
   console.error("引数でタグを指定してください");
   process.exit(1);
@@ -15,6 +20,14 @@ console.log(`delete ${deleteTag}`);
 
 import * as firestoreUtil from "../modules/firestoreUtil";
 
+type DeleteTagBook = {
+  documentId: string;
+  document: {
+    tags: string[];
+    update_user: "batch";
+    update_at: Date;
+  };
+};
 const at = new Date();
 firestoreUtil.tran([
   async (fs: firestoreUtil.FirestoreTransaction) => {
@@ -25,37 +38,42 @@ firestoreUtil.tran([
       "array-contains",
       deleteTag
     );
-    const updateToreadBooks = toreadBookDocuments.map((document) => {
-      console.log(document.book_name);
-      const tags: string[] = document.tags;
-      return {
-        documentId: document.documentId,
-        document: {
-          tags: tags.filter((tag) => tag !== deleteTag),
-          update_user: "batch",
-          update_at: at,
-        },
-      };
-    });
-    const bookshelfBookDocuments = await fs.getCollection(
-      firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK,
-      "isbn",
-      "tags",
-      "array-contains",
-      deleteTag
+    const updateToreadBooks: DeleteTagBook[] = toreadBookDocuments.map(
+      (document) => {
+        console.log(document.book_name);
+        const tags: string[] = document.tags;
+        return {
+          documentId: document.documentId,
+          document: {
+            tags: tags.filter((tag) => tag !== deleteTag),
+            update_user: "batch",
+            update_at: at,
+          },
+        };
+      }
     );
-    const updateBookshelfBooks = bookshelfBookDocuments.map((document) => {
-      console.log(document.book_name);
-      const tags: string[] = document.tags;
-      return {
-        documentId: document.documentId,
-        document: {
-          tags: tags.filter((tag) => tag !== deleteTag),
-          update_user: "batch",
-          update_at: at,
-        },
-      };
-    });
+    let updateBookshelfBooks: DeleteTagBook[] = [];
+    if (deleteBookshelf) {
+      const bookshelfBookDocuments = await fs.getCollection(
+        firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK,
+        "isbn",
+        "tags",
+        "array-contains",
+        deleteTag
+      );
+      updateBookshelfBooks = bookshelfBookDocuments.map((document) => {
+        console.log(document.book_name);
+        const tags: string[] = document.tags;
+        return {
+          documentId: document.documentId,
+          document: {
+            tags: tags.filter((tag) => tag !== deleteTag),
+            update_user: "batch",
+            update_at: at,
+          },
+        };
+      });
+    }
 
     const promises: Promise<void>[] = [];
     updateToreadBooks.forEach((book) => {
