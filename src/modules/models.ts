@@ -22,11 +22,11 @@ export type Library = {
   barcodeUrl: string | null;
 };
 export const fetchLibraries = async (
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ): Promise<Library[]> => {
   const result = await fs.getCollection(
     firestoreUtil.COLLECTION_PATH.M_LIBRARY,
-    "order_num"
+    "order_num",
   );
 
   const today = new Date();
@@ -56,6 +56,25 @@ export const fetchLibraries = async (
       barcodeUrl: resultRow.barcode_url,
     };
   });
+};
+
+export type Mangaapp = {
+  documentId: string;
+  name: string;
+  url: string[];
+};
+
+export const fetchMangaApps = async (
+  fs: firestoreUtil.FirestoreTransaction,
+): Promise<Mangaapp[]> => {
+  const result = await fs.getCollection(
+    firestoreUtil.COLLECTION_PATH.M_MANGAAPP,
+  );
+  return result.map((resultRow) => ({
+    documentId: resultRow.documentId,
+    name: resultRow.name,
+    url: resultRow.url,
+  }));
 };
 
 export type ToreadBook = {
@@ -95,7 +114,7 @@ const calcWantPoint = (tags: string[]): number => {
 };
 export const fetchToreadBooks = async (
   isAuth: boolean,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ): Promise<ToreadBook[]> => {
   //未ログインの場合はwhere句でタグが「プログラミング」を含むものだけ取得する
   const fieldPath = isAuth ? undefined : "tags";
@@ -106,7 +125,7 @@ export const fetchToreadBooks = async (
     "update_at",
     fieldPath,
     opStr,
-    value
+    value,
   );
 
   const books: ToreadBook[] = result.map((resultRow) => {
@@ -155,27 +174,27 @@ export type BookParams = RequestParams & {
 };
 export const createToreadBook = async (
   params: BookParams,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   const document = toreadBookParamsToDocument(params);
   document.create_user = params.user;
   document.create_at = document.update_at;
   await fs.createDocument(
     firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK,
-    document
+    document,
   );
 };
 
 export const updateToreadBook = async (
   documentId: string,
   params: BookParams,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   const document = toreadBookParamsToDocument(params);
   await fs.updateDocument(
     firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK,
     documentId,
-    document
+    document,
   );
 };
 
@@ -227,15 +246,15 @@ export type SimpleBooksParams = RequestParams & {
 };
 export const deleteToreadBooks = async (
   books: SimpleBook[],
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   const promises = [];
   for (const book of books) {
     promises.push(
       fs.deleteDocument(
         firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK,
-        book.documentId
-      )
+        book.documentId,
+      ),
     );
   }
   await Promise.all(promises);
@@ -243,7 +262,7 @@ export const deleteToreadBooks = async (
 
 export const addToreadTag = async (
   params: SimpleBooksParams,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   const tags = params.tags || [];
   const promises = [];
@@ -253,15 +272,15 @@ export const addToreadTag = async (
         firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK,
         book.documentId,
         "tags",
-        tags
-      )
+        tags,
+      ),
     );
   }
   await Promise.all(promises);
 };
 export const deleteToreadTag = async (
   params: SimpleBooksParams,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   const tags = params.tags || [];
   const promises = params.books.map((book) => {
@@ -269,7 +288,7 @@ export const deleteToreadTag = async (
       firestoreUtil.COLLECTION_PATH.T_TOREAD_BOOK,
       book.documentId,
       "tags",
-      tags
+      tags,
     );
   });
   await Promise.all(promises);
@@ -277,7 +296,7 @@ export const deleteToreadTag = async (
 
 export const addBookshelfTag = async (
   params: SimpleBooksParams,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   const tags = params.tags || [];
   const promises = [];
@@ -287,8 +306,8 @@ export const addBookshelfTag = async (
         firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK,
         book.documentId,
         "tags",
-        tags
-      )
+        tags,
+      ),
     );
   }
   await Promise.all(promises);
@@ -307,7 +326,7 @@ const ignoreTags = [
 export const addWantTag = async (
   res: Response,
   params: SimpleBookParams,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   // 本の情報を取得
   const book = await util.getToreadBook(params.book.documentId, fs);
@@ -316,7 +335,7 @@ export const addWantTag = async (
     errorUtil.throwError(
       res,
       "本が登録されていません",
-      util.STATUS_CODES.INTERNAL_SERVER_ERROR
+      util.STATUS_CODES.INTERNAL_SERVER_ERROR,
     );
     return;
   }
@@ -335,7 +354,7 @@ export const addWantTag = async (
       errorUtil.throwError(
         res,
         "本が図書館にありません",
-        util.STATUS_CODES.INTERNAL_SERVER_ERROR
+        util.STATUS_CODES.INTERNAL_SERVER_ERROR,
       );
       return;
     }
@@ -351,7 +370,7 @@ export const addWantTag = async (
       tags: updateTags,
       update_user: params.user,
       update_at: Timestamp.fromDate(new Date()),
-    }
+    },
   );
 
   return;
@@ -359,7 +378,7 @@ export const addWantTag = async (
 
 export const findLibraryTag = async (
   isbn: string,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   const libraries = await fetchLibraries(fs);
   const libraryIds = libraries.map((library) => library.id);
@@ -367,7 +386,7 @@ export const findLibraryTag = async (
   let libraryTag: string | null = null;
   if (calilResult.isExist) {
     const library = libraries.find(
-      (library) => library.id === calilResult.libraryId
+      (library) => library.id === calilResult.libraryId,
     );
     if (library) {
       libraryTag = library.city + "図書館";
@@ -407,14 +426,14 @@ export type NewBookDocument = {
   is_created_toread: boolean;
 };
 export const fetchNewBooks = async (
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ): Promise<NewBookForm[]> => {
   const result = await fs.getCollection(
     firestoreUtil.COLLECTION_PATH.T_NEW_BOOK,
     "is_created_toread",
     "is_created_toread",
     "!=",
-    true
+    true,
   );
 
   return result.map((resultRow) => {
@@ -440,7 +459,7 @@ export type AddNewBooksParams = RequestParams & {
 
 export const addNewBooks = async (
   params: AddNewBooksParams,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   const promises: Promise<void>[] = [];
   for (const newBook of params.newBooks) {
@@ -454,8 +473,8 @@ export const addNewBooks = async (
       fs.updateDocument(
         firestoreUtil.COLLECTION_PATH.T_NEW_BOOK,
         newBook.documentId,
-        document
-      )
+        document,
+      ),
     );
 
     // YYYY-MM-DD→YYYY/MMに変換
@@ -533,7 +552,7 @@ export type BookshelfBook = {
 };
 export const fetchBookshelfBooks = async (
   isAuth: boolean,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   // 未ログインの場合の取得内容
   //  - ★3以上
@@ -546,7 +565,7 @@ export const fetchBookshelfBooks = async (
     "update_at",
     fieldPath,
     opStr,
-    value
+    value,
   );
   if (!isAuth) {
     // 非ログイン時はrate3以上
@@ -582,7 +601,7 @@ export const fetchBookshelfBooks = async (
 
 export const fetchTags = async (
   isAuth: boolean,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   //未ログインの場合は表示用のタグリスト適当に返却
   if (!isAuth)
@@ -591,14 +610,14 @@ export const fetchTags = async (
   //DBからタグ取得
   const result = await fs.getCollection(
     firestoreUtil.COLLECTION_PATH.M_TOREAD_TAG,
-    "order_num"
+    "order_num",
   );
   const masterTags: string[] = result.map((resultRow) => resultRow.tag);
 
   // 図書館マスタから図書館タグを生成
   const libraries = await fetchLibraries(fs);
   const libraryTags: string[] = libraries.map(
-    (library) => library.city + "図書館"
+    (library) => library.city + "図書館",
   );
 
   const bookTags: string[] = [];
@@ -623,7 +642,7 @@ export const fetchTags = async (
       book.tags
         .filter((tag) => !ignoreTags.includes(tag)) // 本自体の性質に結びつかないタグは除去
         .sort()
-        .join("/") // 適当にソートする
+        .join("/"), // 適当にソートする
     );
   });
   // bookshelfTags
@@ -633,7 +652,7 @@ export const fetchTags = async (
       book.tags
         .filter((tag) => !ignoreTags.includes(tag))
         .sort()
-        .join("/")
+        .join("/"),
     );
   });
 
@@ -648,26 +667,26 @@ export type BookshelfBookParams = BookshelfBook &
   };
 export const createBookshelfBook = async (
   params: BookshelfBookParams,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   const document = bookshelfBookParamsToDocument(params);
   document.create_user = params.user;
   document.create_at = document.update_at;
   await fs.createDocument(
     firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK,
-    document
+    document,
   );
 };
 
 export const updateBookshelfBook = async (
   params: BookshelfBookParams,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   const document = bookshelfBookParamsToDocument(params);
   await fs.updateDocument(
     firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK,
     params.documentId || "",
-    document
+    document,
   );
 };
 
@@ -694,7 +713,7 @@ export type BookshelfBookDocument = {
   update_at: Timestamp;
 };
 const bookshelfBookParamsToDocument = (
-  params: BookshelfBookParams
+  params: BookshelfBookParams,
 ): BookshelfBookDocument => {
   const contents: ContentDocument[] = params.contents.map((content) => {
     return {
@@ -728,25 +747,25 @@ export type SimpleBookshelfBookParams = RequestParams & {
 
 export const deleteBookshelfBook = async (
   params: SimpleBookshelfBookParams,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   await fs.deleteDocument(
     firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK,
-    params.documentId
+    params.documentId,
   );
 };
 
 export const deleteBookshelfBooks = async (
   books: SimpleBook[],
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   const promises = [];
   for (const book of books) {
     promises.push(
       fs.deleteDocument(
         firestoreUtil.COLLECTION_PATH.T_BOOKSHELF_BOOK,
-        book.documentId
-      )
+        book.documentId,
+      ),
     );
   }
   await Promise.all(promises);
@@ -758,7 +777,7 @@ export type CreateBooksParams = RequestParams & {
 };
 export const createToreadBooks = async (
   params: CreateBooksParams,
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   for (const book of params.books) {
     await createToreadBook(book, fs);
@@ -771,10 +790,10 @@ type Publisher = {
   isOnKadokawa: boolean;
 };
 export const fetchPublishers = async (
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ): Promise<Publisher[]> => {
   const result = await fs.getCollection(
-    firestoreUtil.COLLECTION_PATH.M_PUBLISHER
+    firestoreUtil.COLLECTION_PATH.M_PUBLISHER,
   );
   return result.map((resultRow) => {
     return {
@@ -793,10 +812,10 @@ export type DLibrary = {
   beforeHash: string;
 };
 export const fetchDLibrary = async (
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ): Promise<DLibrary> => {
   const result = await fs.getCollection(
-    firestoreUtil.COLLECTION_PATH.M_D_LIBRARY
+    firestoreUtil.COLLECTION_PATH.M_D_LIBRARY,
   );
   return result.map((resultRow) => {
     return {

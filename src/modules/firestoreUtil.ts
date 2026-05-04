@@ -129,6 +129,7 @@ export const COLLECTION_PATH = {
   M_USER: "/m_user",
   M_PUBLISHER: "/m_publisher",
   M_D_LIBRARY: "/m_d_library",
+  M_MANGAAPP: "/m_mangaapp",
   T_TOREAD_BOOK: "/t_toread_book",
   T_NEW_BOOK: "/t_new_book",
   T_BOOKSHELF_BOOK: "/t_bookshelf_book",

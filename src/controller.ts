@@ -49,24 +49,12 @@ router.post(
 router.post(
   "/mangaapp/fetch",
   wrapAsyncMiddleware(async (req, res) => {
-    // TODO: スタブ
-    const data: object = {
-      mangaApps: [
-        {
-          id: "piccoma",
-          name: "ピッコマ",
-          url: ["https://piccoma.com/web/search/result?word=", "@SEARCHWORD@"],
-        },
-        {
-          id: "LINE",
-          name: "LINEマンガ",
-          url: [
-            "https://manga.line.me/search_product/list?word=",
-            "@SEARCHWORD@",
-          ],
-        },
-      ],
-    };
+    const data: object = await firestoreUtil.tran([
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        const mangaApps = await models.fetchMangaApps(fs);
+        return { mangaApps };
+      },
+    ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
   }),
