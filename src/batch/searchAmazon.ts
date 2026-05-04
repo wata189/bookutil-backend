@@ -17,7 +17,7 @@ const TAG = {
   FREE: "無料",
   HAS_BUNKO: "文庫あり",
   HAS_NEWER_VERSION: "新版あり",
-  AOZORA: "青空文庫"
+  AOZORA: "青空文庫",
 };
 
 const FIRESTORE_LIMIT = 495;
@@ -85,7 +85,7 @@ const main = async () => {
       await page.goto(url);
 
       // いちおう5秒待つ
-      await util.wait(5);
+      await util.wait(4);
 
       const simpleBook = {
         documentId: toreadBook.documentId,
