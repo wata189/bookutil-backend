@@ -18,7 +18,7 @@ interface PromiseRequestHandler {
   (req: Request, res: Response, next: NextFunction): Promise<unknown>;
 }
 export const wrapAsyncMiddleware = (
-  fn: PromiseRequestHandler
+  fn: PromiseRequestHandler,
 ): RequestHandler => {
   return (req: Request, res: Response, next: NextFunction) =>
     fn(req, res, next).catch(next);
@@ -42,7 +42,34 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
+);
+
+// マンガアプリリスト取得
+router.post(
+  "/mangaapp/fetch",
+  wrapAsyncMiddleware(async (req, res) => {
+    // TODO: スタブ
+    const data: object = {
+      mangaApps: [
+        {
+          id: "piccoma",
+          name: "ピッコマ",
+          url: ["https://piccoma.com/web/search/result?word=", "@SEARCHWORD@"],
+        },
+        {
+          id: "LINE",
+          name: "LINEマンガ",
+          url: [
+            "https://manga.line.me/search_product/list?word=",
+            "@SEARCHWORD@",
+          ],
+        },
+      ],
+    };
+    res.status(util.STATUS_CODES.OK);
+    util.sendJson(res, "OK", data);
+  }),
 );
 
 // 出版社マスタ取得
@@ -57,7 +84,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 //Toread初期処理
@@ -74,7 +101,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 router.post(
@@ -90,7 +117,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 //Toread新規作成
@@ -120,7 +147,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 //Toread 一括新規作成
@@ -150,7 +177,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 //Toread更新
@@ -176,14 +203,14 @@ router.post(
           res,
           documentId,
           params.isbn,
-          fs
+          fs,
         );
         //コンフリクトチェック
         await validationUtil.isNotConflictBook(
           res,
           documentId,
           params.updateAt,
-          fs
+          fs,
         );
 
         //DB更新
@@ -197,7 +224,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 //Toread削除
@@ -230,7 +257,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 //Toreadタグ追加
@@ -265,7 +292,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 // よみたいタグ追加
@@ -288,7 +315,7 @@ router.post(
           res,
           params.book.documentId,
           params.book.updateAt,
-          fs
+          fs,
         );
 
         await models.addWantTag(res, params, fs);
@@ -301,7 +328,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 // よみたいタグ検索
 router.post(
@@ -325,7 +352,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 // 新刊一括追加 新刊データの取得
@@ -348,7 +375,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 router.post(
@@ -388,7 +415,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 //Bookshelf初期処理
@@ -405,7 +432,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 router.post(
@@ -434,7 +461,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 //Bookshelf更新
@@ -460,14 +487,14 @@ router.post(
           res,
           documentId,
           params.isbn,
-          fs
+          fs,
         );
         //コンフリクトチェック
         await validationUtil.isNotConflictBookshelfBook(
           res,
           documentId,
           params.updateAt,
-          fs
+          fs,
         );
 
         //DB更新
@@ -481,7 +508,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 //Bookshelf削除
@@ -514,7 +541,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 // bookshelfタグ追加
@@ -549,7 +576,7 @@ router.post(
     ]);
     res.status(util.STATUS_CODES.OK);
     util.sendJson(res, "OK", data);
-  })
+  }),
 );
 
 //routerをモジュールとして扱う準備
