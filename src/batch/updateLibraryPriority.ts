@@ -9,7 +9,7 @@ const JOB_USER = "batch/updateLibraryPriority.ts";
 import nqdm from "nqdm";
 const FIRESTORE_TRANSACTION_LIMIT = 495;
 
-const IS_BEFORE_MOVING = true; // TODO:引越し前フラグ
+const IS_BEFORE_MOVING = false; // TODO:引越し前フラグ
 
 type updateLibrary = {
   id: string;
@@ -19,11 +19,11 @@ const LIBRARIES: updateLibrary[] = [
   { id: "Tokyo_Shinjuku", city: "新宿区" },
   { id: "Tokyo_Bunkyo", city: "文京区" },
   { id: "Tokyo_Chiyoda", city: "千代田区" },
-  { id: "Tokyo_Taito", city: "台東区" },
-  { id: "Tokyo_Nakano", city: "中野区" },
   { id: "Tokyo_Shibuya", city: "渋谷区" },
-  { id: "Tokyo_Minato", city: "港区" },
+  { id: "Tokyo_Taito", city: "台東区" },
   { id: "Tokyo_Toshima", city: "豊島区" },
+  { id: "Tokyo_Minato", city: "港区" },
+  { id: "Tokyo_Nakano", city: "中野区" },
   { id: "Tokyo_NDL", city: "国会" },
 ];
 
