@@ -49,26 +49,7 @@
 | email    | ﾒｰﾙｱﾄﾞﾚｽ | string | Y    | Y    | Y   |          |                                             |
 | username | ユーザ名 | string | Y    |      |     |          | GCP Identity Platformで払い出されるユーザ名 |
 
-# t_toread_book: よみたいリストデータ
-
-| 物理名             | 論理名       | 型            | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考           |
-| ------------------ | ------------ | ------------- | ---- | ---- | --- | -------- | -------------- |
-| book_name          | 書籍名       | string        | Y    |      |     |          |                |
-| isbn               | ISBN         | string        |      |      | Y   |          | nullの重複は可 |
-| author_name        | 著者名       | string        |      |      |     |          |                |
-| publisher_name     | 出版社名     | string        |      |      |     |          |                |
-| page               | ページ数     | number        |      |      |     |          | 現在未使用     |
-| cover_url          | 書影URL      | string        |      |      |     |          |                |
-| new_book_check_flg | 新刊確認ﾌﾗｸﾞ | number        | Y    |      |     | 0        | 1:true 0:false |
-| tag                | タグ         | array[string] |      |      |     |          |                |
-| other_url          | その他URL    | string        |      |      |     |          | 現在未使用     |
-| memo               | メモ         | string        |      |      |     |          |                |
-| create_user        | 作成者       | string        | Y    |      |     | "system" |                |
-| create_at          | 作成日時     | timestamp     | Y    |      |     | 現在時刻 |                |
-| update_user        | 更新者       | string        | Y    |      |     | "system" |                |
-| update_at          | 更新日時     | timestamp     | Y    |      |     | 現在時刻 |                |
-
-# t_bookshelf_book: 本棚データ
+# t_book: 本データ
 
 | 物理名         | 論理名   | 型            | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考              |
 | -------------- | -------- | ------------- | ---- | ---- | --- | -------- | ----------------- |
@@ -76,30 +57,77 @@
 | isbn           | ISBN     | string        |      |      | Y   |          | nullの重複は可    |
 | author_name    | 著者名   | string        |      |      |     |          |                   |
 | publisher_name | 出版社名 | string        |      |      |     |          |                   |
+| publish_month  | 出版年月 | string        |      |      |     |          | YYYY/MM           |
 | cover_url      | 書影URL  | string        |      |      |     |          |                   |
 | tag            | タグ     | array[string] |      |      |     |          |                   |
-| read_date      | 読了日   |               |      |      |     |          | YYYY/MM/DD        |
-| rate           | 評価     |               | Y    |      |     | 0        | 0は評価なしと判定 |
 | contents       | 書籍内容 | array         |      |      |     |          |                   |
-| - content_name | - 内容名 |               |      |      |     |          |                   |
-| - author_name  | - 著者名 |               |      |      |     |          |                   |
-| - rate         | - 評価   |               | Y    |      |     | 0        | 0は評価なしと判定 |
+| - content_name | - 内容名 | string        |      |      |     |          |                   |
+| - author_name  | - 著者名 | string        |      |      |     |          |                   |
+| - rate         | - 評価   | number        | Y    |      |     | 0        | 0は評価なしと判定 |
+| memo           | メモ     | string        |      |      |     |          |                   |
 | create_user    | 作成者   | string        | Y    |      |     | "system" |                   |
 | create_at      | 作成日時 | timestamp     | Y    |      |     | 現在時刻 |                   |
 | update_user    | 更新者   | string        | Y    |      |     | "system" |                   |
 | update_at      | 更新日時 | timestamp     | Y    |      |     | 現在時刻 |                   |
 
+# t_toread_book: よみたいリストデータ
+
+| 物理名             | 論理名       | 型        | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考           |
+| ------------------ | ------------ | --------- | ---- | ---- | --- | -------- | -------------- |
+| book_id            | 本ID         | string    | Y    | Y    | Y   |          | t_bookのID     |
+| new_book_check_flg | 新刊確認ﾌﾗｸﾞ | number    | Y    |      |     | 0        | 1:true 0:false |
+| create_user        | 作成者       | string    | Y    |      |     | "system" |                |
+| create_at          | 作成日時     | timestamp | Y    |      |     | 現在時刻 |                |
+| update_user        | 更新者       | string    | Y    |      |     | "system" |                |
+| update_at          | 更新日時     | timestamp | Y    |      |     | 現在時刻 |                |
+
+# t_bookshelf_book: 本棚データ
+
+| 物理名      | 論理名   | 型        | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考              |
+| ----------- | -------- | --------- | ---- | ---- | --- | -------- | ----------------- |
+| book_id     | 本ID     | string    | Y    | Y    | Y   |          | t_bookのID        |
+| read_date   | 読了日   | string    |      |      |     |          | YYYY/MM/DD        |
+| rate        | 評価     | number    | Y    |      |     | 0        | 0は評価なしと判定 |
+| create_user | 作成者   | string    | Y    |      |     | "system" |                   |
+| create_at   | 作成日時 | timestamp | Y    |      |     | 現在時刻 |                   |
+| update_user | 更新者   | string    | Y    |      |     | "system" |                   |
+| update_at   | 更新日時 | timestamp | Y    |      |     | 現在時刻 |                   |
+
+# t_reading_book: 読書中データ
+
+| 物理名      | 論理名   | 型        | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考       |
+| ----------- | -------- | --------- | ---- | ---- | --- | -------- | ---------- |
+| book_id     | 本ID     | string    | Y    | Y    | Y   |          | t_bookのID |
+| create_user | 作成者   | string    | Y    |      |     | "system" |            |
+| create_at   | 作成日時 | timestamp | Y    |      |     | 現在時刻 |            |
+| update_user | 更新者   | string    | Y    |      |     | "system" |            |
+| update_at   | 更新日時 | timestamp | Y    |      |     | 現在時刻 |            |
+
 # t_new_book: 新刊データ
 
-| 物理名           | 論理名       | 型        | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考                            |
-| ---------------- | ------------ | --------- | ---- | ---- | --- | -------- | ------------------------------- |
-| book_name        | 書籍名       | string    | Y    |      |     |          |                                 |
-| isbn             | ISBN         | string    |      |      | Y   |          |                                 |
-| author_name      | 著者名       | string    |      |      |     |          |                                 |
-| publisher_name   | 出版社名     | string    |      |      |     |          |                                 |
-| publish_date     | 出版日       | string    | Y    |      |     |          | YYYY-MM-DD(新刊netのﾃﾞｰﾀの都合) |
-| is_create_toread | 追加済みﾌﾗｸﾞ | boolean   | Y    |      |     | false    | toreadかbookshelfに追加したか   |
-| create_user      | 作成者       | string    | Y    |      |     | "system" |                                 |
-| create_at        | 作成日時     | timestamp | Y    |      |     | 現在時刻 |                                 |
-| update_user      | 更新者       | string    | Y    |      |     | "system" |                                 |
-| update_at        | 更新日時     | timestamp | Y    |      |     | 現在時刻 |                                 |
+| 物理名       | 論理名   | 型        | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考                            |
+| ------------ | -------- | --------- | ---- | ---- | --- | -------- | ------------------------------- |
+| book_id      | 本ID     | string    | Y    | Y    | Y   |          | t_bookのID                      |
+| publish_date | 出版日   | string    | Y    |      |     |          | YYYY-MM-DD(新刊netのﾃﾞｰﾀの都合) |
+| create_user  | 作成者   | string    | Y    |      |     | "system" |                                 |
+| create_at    | 作成日時 | timestamp | Y    |      |     | 現在時刻 |                                 |
+| update_user  | 更新者   | string    | Y    |      |     | "system" |                                 |
+| update_at    | 更新日時 | timestamp | Y    |      |     | 現在時刻 |                                 |
+
+# t_jisui_book: 自炊データ
+
+| 物理名      | 論理名         | 型            | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考                 |
+| ----------- | -------------- | ------------- | ---- | ---- | --- | -------- | -------------------- |
+| book_id     | 本ID           | string        | Y    | Y    | Y   |          | t_bookのID           |
+| file_name   | ファイル名     | string        | Y    |      | Y   |          |                      |
+| type        | ファイルタイプ | string        | Y    |      |     |          | pdf/epub/image/audio |
+| page_max    | ページ最大値   | number        | Y    |      |     |          | audioは再生時間秒    |
+| page_tmp    | 現在のページ   | number        | Y    |      |     | 0        |                      |
+| chapter     | チャプター     | array         | Y    |      |     | 空配列   |                      |
+| - name      | - 内容名       | string        | Y    |      |     |          |                      |
+| - page      | - ページ       | number        | Y    |      |     |          |                      |
+| bookmarks   | しおり         | array[number] |      |      |     | 空配列   |                      |
+| create_user | 作成者         | string        | Y    |      |     | "system" |                      |
+| create_at   | 作成日時       | timestamp     | Y    |      |     | 現在時刻 |                      |
+| update_user | 更新者         | string        | Y    |      |     | "system" |                      |
+| update_at   | 更新日時       | timestamp     | Y    |      |     | 現在時刻 |                      |
