@@ -315,12 +315,10 @@ export const addBookshelfTag = async (
 
 const ignoreTags = [
   "ブックウォーカー",
-  "無料",
   "オーディブル",
   "キンドルアンリミテッド",
   "アプリ",
   "新宿区電子図書館",
-  "デジタルコレクション",
 ];
 
 export const addWantTag = async (
