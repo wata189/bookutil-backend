@@ -34,7 +34,7 @@ export class FirestoreTransaction {
     orderByField?: string,
     fieldPath?: string,
     opStr?: WhereFilterOp,
-    value?: unknown
+    value?: unknown,
   ) {
     const ref = this.getCollectionRef(collectionPath);
     let querySnapshot: QuerySnapshot<DocumentData, DocumentData> | null = null;
@@ -73,7 +73,7 @@ export class FirestoreTransaction {
   async updateDocument(
     collectionPath: string,
     documentId: string,
-    document: { [x: string]: FieldValue | Partial<unknown> | undefined | null }
+    document: { [x: string]: FieldValue | Partial<unknown> | undefined | null },
   ) {
     const ref = this.getDocumentRef(collectionPath, documentId);
     this.transaction.update(ref, document);
@@ -86,7 +86,7 @@ export class FirestoreTransaction {
     collectionPath: string,
     documentId: string,
     field: string,
-    values: unknown[]
+    values: unknown[],
   ) {
     const document = {
       [field]: FieldValue.arrayUnion(...values),
@@ -98,7 +98,7 @@ export class FirestoreTransaction {
     collectionPath: string,
     documentId: string,
     field: string,
-    values: unknown[]
+    values: unknown[],
   ) {
     const document = {
       [field]: FieldValue.arrayRemove(...values),
@@ -107,8 +107,9 @@ export class FirestoreTransaction {
   }
 }
 
+// TODO: 返り値絶対object[]のほうがよい
 export const tran = async (
-  funcs: ((fs: FirestoreTransaction) => Promise<object>)[]
+  funcs: ((fs: FirestoreTransaction) => Promise<object>)[],
 ) => {
   const fs = new FirestoreTransaction();
   let result: object | void = {};
