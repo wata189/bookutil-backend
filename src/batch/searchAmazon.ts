@@ -231,6 +231,36 @@ const main = async () => {
       ),
     ]);
   }
+
+  // 文庫・新版の新刊情報をDBに追加
+  for (const splitedBunkos of util.splitArray(bunkos, FIRESTORE_LIMIT)) {
+    await firestoreUtil.tran([
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        const promises = splitedBunkos.map((bunko) =>
+          fs.createDocument(firestoreUtil.COLLECTION_PATH.T_NEW_BOOK, bunko)
+        );
+        await Promise.all(promises);
+        return {};
+      },
+    ]);
+  }
+  for (const splitedNewerVersions of util.splitArray(
+    newerVersions,
+    FIRESTORE_LIMIT
+  )) {
+    await firestoreUtil.tran([
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        const promises = splitedNewerVersions.map((newerVersion) =>
+          fs.createDocument(
+            firestoreUtil.COLLECTION_PATH.T_NEW_BOOK,
+            newerVersion
+          )
+        );
+        await Promise.all(promises);
+        return {};
+      },
+    ]);
+  }
 };
 
 const getBunkoIsbn = async (page: Page) => {
