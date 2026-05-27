@@ -92,25 +92,23 @@ export type ToreadBook = {
   tags: string[];
 };
 
-// よみたいポイントの算出 ブックウォーカーよんでいる＞よやくする＞よんでいる＞よみたい＞その他
-const calcWantPoint = (tags: string[]): number => {
-  let wantPoint = 0;
+// よみたいポイントの算出 ブックウォーカーよんでいる＞よんでいる＞よみたい＞その他
+const calcPriority = (tags: string[]): number => {
+  let priority = 0;
   if (tags.includes("よんでいる")) {
-    wantPoint = 2;
+    priority = 2;
     // ブックウォーカー・無料は若干優先
     if (
       tags.includes("ブックウォーカー") ||
       tags.includes("無料") ||
       tags.includes("カクヨム")
     ) {
-      wantPoint += 2;
+      priority += 1;
     }
-  } else if (tags.includes("よやくする")) {
-    wantPoint = 3;
-  } else if (tags.includes("よみたい")) {
-    wantPoint = 1;
+  } else if (tags.includes(TAG_WANT)) {
+    priority = 1;
   }
-  return wantPoint;
+  return priority;
 };
 export const fetchToreadBooks = async (
   isAuth: boolean,
@@ -147,7 +145,7 @@ export const fetchToreadBooks = async (
   //
   return books.sort((a, b) => {
     return (
-      calcWantPoint(b.tags) - calcWantPoint(a.tags) || b.updateAt - a.updateAt
+      calcPriority(b.tags) - calcPriority(a.tags) || b.updateAt - a.updateAt
     );
   });
 };
@@ -339,9 +337,6 @@ export const addWantTag = async (
   }
 
   let updateTags: string[] = book.tags;
-  if (!updateTags.includes(TAG_WANT)) {
-    updateTags.push(TAG_WANT);
-  }
 
   const hasIgnoreTag =
     ignoreTags.filter((t) => updateTags.includes(t)).length > 0;
@@ -622,7 +617,6 @@ export const fetchTags = async (
   // TODO: タグマスタにignoreTagsのフラグも入れる？
   const ignoreTags = [
     ...libraryTags,
-    "よやくする",
     "よんでいる",
     "よみたい",
     "かいたい",

@@ -283,7 +283,7 @@ router.post(
   }),
 );
 
-// よみたいタグ追加
+// 図書館タグ追加
 router.post(
   "/toread/tag/want/add",
   wrapAsyncMiddleware(async (req, res) => {
@@ -318,7 +318,7 @@ router.post(
     util.sendJson(res, "OK", data);
   }),
 );
-// よみたいタグ検索
+// 図書館タグ検索
 router.post(
   "/toread/tag/want/get",
   wrapAsyncMiddleware(async (req, res) => {

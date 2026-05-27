@@ -11,7 +11,7 @@ const CLIENT_URL = process.env.CLIENT_URL;
 const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
   // newBookCheckFlg立ってる図書館を取得
   const libraries = (await searchCheckNewBookLibraries(fs)).sort(
-    (a, b) => a.checkLibraryOrderNum - b.checkLibraryOrderNum
+    (a, b) => a.checkLibraryOrderNum - b.checkLibraryOrderNum,
   );
   // newBookCheckFlg立っている本を取得
   const toreadBooks = await searchCheckNewBookToreadBooks(fs);
@@ -25,7 +25,7 @@ const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
       const cityTags = libraries
         .filter(
           (tmpLib) =>
-            tmpLib.checkLibraryOrderNum <= library.checkLibraryOrderNum
+            tmpLib.checkLibraryOrderNum <= library.checkLibraryOrderNum,
         )
         .map((tmpLib) => tmpLib.city + "図書館");
       const isSearched =
@@ -51,7 +51,6 @@ const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
   // 検索結果あったら処理続行
   if (searchResults.length <= 0) return { discordMessages: [] };
 
-  // TODO: 重複気になる いったん同期にしてみる
   const discordMessages: string[] = [];
   for (const searchResult of searchResults) {
     const library = searchResult.library;
@@ -88,14 +87,14 @@ const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
 };
 
 const searchCheckNewBookLibraries = async (
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   return (await models.fetchLibraries(fs)).filter((library) => {
     return library.newBookCheckFlg; //図書館チェックフラグ立っている図書館のみ
   });
 };
 const searchCheckNewBookToreadBooks = async (
-  fs: firestoreUtil.FirestoreTransaction
+  fs: firestoreUtil.FirestoreTransaction,
 ) => {
   return (await models.fetchToreadBooks(true, fs)).filter((book) => {
     return book.newBookCheckFlg && book.isbn && util.isIsbn(book.isbn); // 図書館チェックフラグたち、isbnがあるもののみ
@@ -105,11 +104,15 @@ const searchCheckNewBookToreadBooks = async (
 // Define main script
 const main = async () => {
   systemLogger.info("checkLibrary start");
-  const result = await firestoreUtil.tran([checkLibrary]) as { discordMessages: string[] };
+  const result = (await firestoreUtil.tran([checkLibrary])) as {
+    discordMessages: string[];
+  };
   // Discord送信はトランザクション外で行う（リトライによる二重送信防止）
   if (result.discordMessages.length > 0) {
     const yyyyMMdd = util.formatDateToStr(new Date(), "yyyy/MM/dd");
-    await discordUtil.sendCheckLibrary(`【${yyyyMMdd}】図書館で本が見つかったよ！`);
+    await discordUtil.sendCheckLibrary(
+      `【${yyyyMMdd}】図書館で本が見つかったよ！`,
+    );
     for (const msg of result.discordMessages) {
       await discordUtil.sendCheckLibrary(msg);
     }

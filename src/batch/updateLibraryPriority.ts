@@ -33,7 +33,7 @@ const main = async () => {
   // 通知自体のメッセージ
   const yyyyMMdd = util.formatDateToStr(new Date(), "yyyy/MM/dd");
   await discordUtil.sendSearchAmazon(
-    `【${yyyyMMdd}】図書館優先度アップデートを開始しました!`
+    `【${yyyyMMdd}】図書館優先度アップデートを開始しました!`,
   );
 
   const data = (await firestoreUtil.tran([
@@ -45,7 +45,6 @@ const main = async () => {
 
   const toreadBooks = data.toreadBooks
     .filter((b) => b.isbn) // isbnあるものだけ
-    .filter((b) => b.tags.includes("よみたい")) // よみたいだけ
     .filter((b) => b.tags.join("/").includes("図書館")) // 図書館タグついているものだけ
     .filter((b) => !b.tags.includes("新宿区電子図書館")) // 電子図書館タグ入は除外
     .filter((b) => !b.tags.includes("新宿区図書館")); // TODO:優先度変わらない図書館のタグ入は除外
@@ -80,7 +79,7 @@ const main = async () => {
   } catch (e) {
     // エラーキャッチ（たぶんAPI上限）したらそこまでの部分をDB登録
     await discordUtil.sendSearchAmazon(
-      `エラー発生のため最後まで処理が完了していません`
+      `エラー発生のため最後まで処理が完了していません`,
     );
     systemLogger.warn(e);
   }
@@ -88,7 +87,7 @@ const main = async () => {
   // 500件ずつにトランザクションを分割する
   for (const splitedResults of util.splitArray(
     searchResults,
-    FIRESTORE_TRANSACTION_LIMIT
+    FIRESTORE_TRANSACTION_LIMIT,
   )) {
     await firestoreUtil.tran([
       async (fs: firestoreUtil.FirestoreTransaction) => {
@@ -108,7 +107,6 @@ const main = async () => {
           const libTag =
             library.city + (IS_BEFORE_MOVING ? "引越後" : "") + "図書館";
           updateTags.push(libTag);
-          updateTags.push("よみたい");
 
           //DB更新
           const bookParams: models.BookParams = {
@@ -128,7 +126,7 @@ const main = async () => {
   }
 
   await discordUtil.sendSearchAmazon(
-    `図書館優先度アップデートが完了しました！`
+    `図書館優先度アップデートが完了しました！`,
   );
 };
 
