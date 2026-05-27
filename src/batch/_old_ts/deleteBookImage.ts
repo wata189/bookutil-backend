@@ -18,7 +18,7 @@ if (!targetDomain) {
 console.log("start deleteCoverUrl");
 console.log(`target domain: ${targetDomain}`);
 
-import * as firestoreUtil from "../modules/firestoreUtil";
+import * as firestoreUtil from "../../modules/firestoreUtil";
 
 const at = new Date();
 

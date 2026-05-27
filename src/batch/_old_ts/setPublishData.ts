@@ -1,9 +1,9 @@
-import { systemLogger } from "../modules/logUtil";
-import * as util from "../modules/util";
-import * as models from "../modules/models";
-import * as firestoreUtil from "../modules/firestoreUtil";
-import * as discordUtil from "../modules/discordUtil";
-import * as bookApiUtil from "../modules/bookApiUtil";
+import { systemLogger } from "../../modules/logUtil";
+import * as util from "../../modules/util";
+import * as models from "../../modules/models";
+import * as firestoreUtil from "../../modules/firestoreUtil";
+import * as discordUtil from "../../modules/discordUtil";
+import * as bookApiUtil from "../../modules/bookApiUtil";
 import nqdm from "nqdm";
 
 const TAG = {
@@ -29,10 +29,10 @@ const main = async () => {
   await firestoreUtil.tran([
     async (fs: firestoreUtil.FirestoreTransaction) => {
       toreadBooks = filterUncompleteBooks(
-        await models.fetchToreadBooks(true, fs)
+        await models.fetchToreadBooks(true, fs),
       ).slice(0, GOOGLE_BOOKS_API_LIMIT);
       bookshelfBooks = filterUncompleteBooks(
-        await models.fetchBookshelfBooks(true, fs)
+        await models.fetchBookshelfBooks(true, fs),
       ).slice(0, GOOGLE_BOOKS_API_LIMIT);
       return {};
     },
@@ -55,12 +55,12 @@ const main = async () => {
     await util.wait(3);
   }
   const updateFunc: ((
-    fs: firestoreUtil.FirestoreTransaction
+    fs: firestoreUtil.FirestoreTransaction,
   ) => Promise<object>)[] = [];
 
   for (const splitedParams of util.splitArray(
     updatedToreadBookParams,
-    FIRESTORE_LIMIT
+    FIRESTORE_LIMIT,
   )) {
     updateFunc.push(async (fs: firestoreUtil.FirestoreTransaction) => {
       const promises: Promise<void>[] = [];
@@ -74,7 +74,7 @@ const main = async () => {
   }
   for (const splitedParams of util.splitArray(
     updatedBookshelfBookParams,
-    FIRESTORE_LIMIT
+    FIRESTORE_LIMIT,
   )) {
     updateFunc.push(async (fs: firestoreUtil.FirestoreTransaction) => {
       const promises: Promise<void>[] = [];
@@ -92,7 +92,7 @@ const main = async () => {
 };
 
 const updateBookshelfBook = async (
-  book: models.BookshelfBook
+  book: models.BookshelfBook,
 ): Promise<models.BookshelfBookParams | null> => {
   if (!book.isbn) return null;
 
@@ -123,7 +123,7 @@ const updateBookshelfBook = async (
 };
 
 const updateToreadBook = async (
-  book: models.ToreadBook
+  book: models.ToreadBook,
 ): Promise<models.BookParams | null> => {
   if (!book.isbn) return null;
 
@@ -165,7 +165,7 @@ const updateToreadBook = async (
 const filterUncompleteBooks = <
   T extends models.ToreadBook | models.BookshelfBook,
 >(
-  books: T[]
+  books: T[],
 ) => {
   return books.filter((b) => {
     // isbnあり、出版日がないものを対象とする
