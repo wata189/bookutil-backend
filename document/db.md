@@ -105,14 +105,18 @@
 
 # t_new_book: 新刊データ
 
-| 物理名       | 論理名   | 型        | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考                            |
-| ------------ | -------- | --------- | ---- | ---- | --- | -------- | ------------------------------- |
-| book_id      | 本ID     | string    | Y    | Y    | Y   |          | t_bookのID                      |
-| publish_date | 出版日   | string    | Y    |      |     |          | YYYY-MM-DD(新刊netのﾃﾞｰﾀの都合) |
-| create_user  | 作成者   | string    | Y    |      |     | "system" |                                 |
-| create_at    | 作成日時 | timestamp | Y    |      |     | 現在時刻 |                                 |
-| update_user  | 更新者   | string    | Y    |      |     | "system" |                                 |
-| update_at    | 更新日時 | timestamp | Y    |      |     | 現在時刻 |                                 |
+| 物理名         | 論理名   | 型        | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考                                   |
+| -------------- | -------- | --------- | ---- | ---- | --- | -------- | -------------------------------------- |
+| book_name      | 書籍名   | string    | Y    |      |     |          |                                        |
+| isbn           | ISBN     | string    |      |      | Y   |          | nullの重複は可                         |
+| author_name    | 著者名   | string    |      |      |     |          |                                        |
+| publisher_name | 出版社名 | string    |      |      |     |          |                                        |
+| publish_date   | 出版日   | string    | Y    |      |     |          | YYYY-MM-DD(新刊netのﾃﾞｰﾀの都合)        |
+| tags           | タグ     | string    |      |      |     |          | 新刊データはなぜかタグstringで持ってる |
+| create_user    | 作成者   | string    | Y    |      |     | "system" |                                        |
+| create_at      | 作成日時 | timestamp | Y    |      |     | 現在時刻 |                                        |
+| update_user    | 更新者   | string    | Y    |      |     | "system" |                                        |
+| update_at      | 更新日時 | timestamp | Y    |      |     | 現在時刻 |                                        |
 
 # t_jisui_book: 自炊データ
 
