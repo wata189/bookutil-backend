@@ -20,6 +20,7 @@ export type Library = {
   spUrl: string | null;
   calendarUrl: string;
   barcodeUrl: string | null;
+  note: string | null;
 };
 export const fetchLibraries = async (
   fs: firestoreUtil.FirestoreTransaction,
@@ -54,6 +55,7 @@ export const fetchLibraries = async (
       spUrl: resultRow.sp_url,
       calendarUrl,
       barcodeUrl: resultRow.barcode_url,
+      note: resultRow.note || null,
     };
   });
 };

@@ -13,6 +13,7 @@
 | barcode_url             | 貸出ﾊﾞｰｺｰﾄﾞURL   | string    |      |      |     |          |                              |
 | new_book_check_flg      | 新刊確認フラグ   | number    | Y    |      |     | 1        | 1:true 0:false               |
 | order_num               | 並び順           | number    | Y    |      | Y   |          |                              |
+| note                    | メモ             | string    |      |      |     |          |                              |
 | check_library_order_num | 図書館確認優先度 | number    | Y    |      | Y   |          | checkLibraryで利用する優先度 |
 | create_user             | 作成者           | string    | Y    |      |     | "system" |                              |
 | create_at               | 作成日時         | timestamp | Y    |      |     | 現在時刻 |                              |
