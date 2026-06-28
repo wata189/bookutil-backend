@@ -58,10 +58,16 @@ export const fetchLibraries = async (
   });
 };
 
-export type Mangaapp = {
-  documentId: string;
+type MangaappItem = {
   name: string;
   url: string[];
+  orderNum: number;
+};
+export type Mangaapp = {
+  documentId: string;
+  category: string;
+  orderNum: number;
+  apps: MangaappItem[];
 };
 
 export const fetchMangaApps = async (
@@ -69,11 +75,24 @@ export const fetchMangaApps = async (
 ): Promise<Mangaapp[]> => {
   const result = await fs.getCollection(
     firestoreUtil.COLLECTION_PATH.M_MANGAAPP,
+    "order_num",
   );
   return result.map((resultRow) => ({
     documentId: resultRow.documentId,
-    name: resultRow.name,
-    url: resultRow.url,
+    category: resultRow.category,
+    orderNum: resultRow.order_num,
+    apps: [...resultRow.apps]
+      .sort(
+        (
+          a: { order_num: number },
+          b: { order_num: number },
+        ) => a.order_num - b.order_num,
+      )
+      .map((app: { name: string; url: string[]; order_num: number }) => ({
+        name: app.name,
+        url: app.url,
+        orderNum: app.order_num,
+      })),
   }));
 };
 

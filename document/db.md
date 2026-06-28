@@ -19,6 +19,21 @@
 | update_user             | 更新者           | string    | Y    |      |     | "system" |                              |
 | update_at               | 更新日時         | timestamp | Y    |      |     | 現在時刻 |                              |
 
+# m_mangaapp: マンガアプリマスタ
+
+| 物理名      | 論理名   | 型            | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考                                         |
+| ----------- | -------- | ------------- | ---- | ---- | --- | -------- | -------------------------------------------- |
+| category    | カテゴリ | string        | Y    |      | Y   |          |                                              |
+| order_num   | 並び順   | number        | Y    |      | Y   |          |                                              |
+| apps        | アプリ   | array         | Y    |      |     |          |                                              |
+| - name      | アプリ名 | string        | Y    |      |     |          |                                              |
+| - url       | URL      | array[string] | Y    |      |     |          | URLは検索箇所を置換しやすいようにarrayにする |
+| - order_num | 並び順   | number        | Y    |      | Y   |          |                                              |
+| create_user | 作成者   | string        | Y    |      |     | "system" |                                              |
+| create_at   | 作成日時 | timestamp     | Y    |      |     | 現在時刻 |                                              |
+| update_user | 更新者   | string        | Y    |      |     | "system" |                                              |
+| update_at   | 更新日時 | timestamp     | Y    |      |     | 現在時刻 |                                              |
+
 # m_toread_tag: タグマスタ
 
 | 物理名      | 論理名   | 型        | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考 |
