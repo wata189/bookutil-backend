@@ -167,3 +167,21 @@
 | create_at      | 作成日時       | timestamp     | Y    |      |     | 現在時刻 |                      |
 | update_user    | 更新者         | string        | Y    |      |     | "system" |                      |
 | update_at      | 更新日時       | timestamp     | Y    |      |     | 現在時刻 |                      |
+
+# t_manga: アプリマンガデータ
+
+| 物理名         | 論理名   | 型            | 必須 | 主ｷｰ | UK  | ﾃﾞﾌｫﾙﾄ値 | 備考                                                    |
+| -------------- | -------- | ------------- | ---- | ---- | --- | -------- | ------------------------------------------------------- |
+| book_name      | 書籍名   | string        | Y    |      |     |          |                                                         |
+| isbn           | ISBN     | string        |      |      | Y   |          | nullの重複は可                                          |
+| author_name    | 著者名   | string        |      |      |     |          |                                                         |
+| publisher_name | 出版社名 | string        |      |      |     |          |                                                         |
+| publish_month  | 出版年月 | string        |      |      |     |          | YYYY/MM                                                 |
+| cover_url      | 書影URL  | string        |      |      |     |          |                                                         |
+| tags           | タグ     | array[string] |      |      |     |          | アプリ名が入る想定                                      |
+| memo           | メモ     | string        |      |      |     |          |                                                         |
+| status         | 読書状況 | string        | Y    |      |     | "toread" | "toread":未読 "reading":"読書中" "read": 最新刊まで読了 |
+| create_user    | 作成者   | string        | Y    |      |     | "system" |                                                         |
+| create_at      | 作成日時 | timestamp     | Y    |      |     | 現在時刻 |                                                         |
+| update_user    | 更新者   | string        | Y    |      |     | "system" |                                                         |
+| update_at      | 更新日時 | timestamp     | Y    |      |     | 現在時刻 |                                                         |

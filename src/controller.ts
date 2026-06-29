@@ -567,5 +567,109 @@ router.post(
   }),
 );
 
+// マンガ一覧取得
+router.post(
+  "/manga/fetch",
+  wrapAsyncMiddleware(async (req, res) => {
+    const data: object = await firestoreUtil.tran([
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        const isAuth = await authUtil.isAuth(req.body.idToken?.toString(), fs);
+        validationUtil.isAuth(res, isAuth);
+
+        const mangas = await models.fetchMangas(fs);
+        return { mangas };
+      },
+    ]);
+    res.status(util.STATUS_CODES.OK);
+    util.sendJson(res, "OK", data);
+  }),
+);
+
+// マンガ新規作成
+router.post(
+  "/manga/create",
+  wrapAsyncMiddleware(async (req, res) => {
+    const params: models.MangaParams = req.body;
+    let isAuth = false;
+    const data: object = await firestoreUtil.tran([
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        isAuth = await authUtil.isAuth(params.idToken, fs);
+        validationUtil.isAuth(res, isAuth);
+        validationUtil.isValidManga(res, params);
+
+        await models.createManga(params, fs);
+        return {};
+      },
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        const mangas = await models.fetchMangas(fs);
+        return { mangas };
+      },
+    ]);
+    res.status(util.STATUS_CODES.OK);
+    util.sendJson(res, "OK", data);
+  }),
+);
+
+// マンガ更新
+router.post(
+  "/manga/update",
+  wrapAsyncMiddleware(async (req, res) => {
+    const params: models.MangaParams = req.body;
+    const documentId = params.documentId || "";
+    let isAuth = false;
+    const data: object = await firestoreUtil.tran([
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        isAuth = await authUtil.isAuth(params.idToken, fs);
+        validationUtil.isAuth(res, isAuth);
+        validationUtil.isValidManga(res, params);
+        validationUtil.isValidUpdateManga(res, params);
+        await validationUtil.isExistMangaId(res, documentId, fs);
+        await validationUtil.isNotConflictManga(
+          res,
+          documentId,
+          params.updateAt,
+          fs,
+        );
+
+        await models.updateManga(documentId, params, fs);
+        return {};
+      },
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        const mangas = await models.fetchMangas(fs);
+        return { mangas };
+      },
+    ]);
+    res.status(util.STATUS_CODES.OK);
+    util.sendJson(res, "OK", data);
+  }),
+);
+
+// マンガ削除
+router.post(
+  "/manga/delete",
+  wrapAsyncMiddleware(async (req, res) => {
+    const params: models.SimpleBooksParams = req.body;
+    let isAuth = false;
+    const data: object = await firestoreUtil.tran([
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        isAuth = await authUtil.isAuth(params.idToken, fs);
+        validationUtil.isAuth(res, isAuth);
+        validationUtil.isValidBooks(res, params);
+        await validationUtil.isExistMangasId(res, params.books, fs);
+        await validationUtil.isNotConflictMangas(res, params.books, fs);
+
+        await models.deleteMangas(params.books, fs);
+        return {};
+      },
+      async (fs: firestoreUtil.FirestoreTransaction) => {
+        const mangas = await models.fetchMangas(fs);
+        return { mangas };
+      },
+    ]);
+    res.status(util.STATUS_CODES.OK);
+    util.sendJson(res, "OK", data);
+  }),
+);
+
 //routerをモジュールとして扱う準備
 export { router };

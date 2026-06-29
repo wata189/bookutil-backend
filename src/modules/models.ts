@@ -768,6 +768,125 @@ export const deleteBookshelfBook = async (
   );
 };
 
+type MangaStatus = "toread" | "reading" | "read";
+
+export type Manga = {
+  documentId: string;
+  bookName: string;
+  isbn: string | null;
+  authorName: string | null;
+  publisherName: string | null;
+  publishedMonth: string | null;
+  coverUrl: string | null;
+  tags: string[];
+  memo: string | null;
+  status: MangaStatus;
+  updateAt: number;
+};
+
+export type MangaParams = RequestParams & {
+  documentId: string | null;
+  updateAt: number | null;
+  user: string;
+  bookName: string;
+  isbn: string | null;
+  authorName: string | null;
+  publisherName: string | null;
+  publishedMonth: string | null;
+  coverUrl: string | null;
+  tags: string[];
+  memo: string | null;
+  status: MangaStatus;
+};
+
+type MangaDocument = {
+  book_name: string;
+  isbn: string | null;
+  author_name: string | null;
+  publisher_name: string | null;
+  publish_month: string | null;
+  cover_url: string | null;
+  tags: string[];
+  memo: string | null;
+  status: MangaStatus;
+  create_user?: string;
+  create_at?: Timestamp;
+  update_user: string;
+  update_at: Timestamp;
+};
+
+const mangaParamsToDocument = (params: MangaParams): MangaDocument => ({
+  book_name: params.bookName,
+  isbn: params.isbn,
+  author_name: params.authorName,
+  publisher_name: params.publisherName,
+  publish_month: params.publishedMonth,
+  cover_url: params.coverUrl,
+  tags: params.tags,
+  memo: params.memo,
+  status: params.status,
+  update_user: params.user,
+  update_at: Timestamp.fromDate(new Date()),
+});
+
+export const fetchMangas = async (
+  fs: firestoreUtil.FirestoreTransaction,
+): Promise<Manga[]> => {
+  const result = await fs.getCollection(
+    firestoreUtil.COLLECTION_PATH.T_MANGA,
+    "update_at",
+  );
+  return result.map((resultRow) => ({
+    documentId: resultRow.documentId,
+    bookName: resultRow.book_name,
+    isbn: resultRow.isbn,
+    authorName: resultRow.author_name,
+    publisherName: resultRow.publisher_name,
+    publishedMonth: resultRow.publish_month || null,
+    coverUrl: resultRow.cover_url,
+    tags: resultRow.tags,
+    memo: resultRow.memo || null,
+    status: resultRow.status,
+    updateAt: resultRow.update_at.seconds,
+  }));
+};
+
+export const createManga = async (
+  params: MangaParams,
+  fs: firestoreUtil.FirestoreTransaction,
+) => {
+  const document = mangaParamsToDocument(params);
+  document.create_user = params.user;
+  document.create_at = document.update_at;
+  await fs.createDocument(firestoreUtil.COLLECTION_PATH.T_MANGA, document);
+};
+
+export const updateManga = async (
+  documentId: string,
+  params: MangaParams,
+  fs: firestoreUtil.FirestoreTransaction,
+) => {
+  const document = mangaParamsToDocument(params);
+  await fs.updateDocument(
+    firestoreUtil.COLLECTION_PATH.T_MANGA,
+    documentId,
+    document,
+  );
+};
+
+export const deleteMangas = async (
+  books: SimpleBook[],
+  fs: firestoreUtil.FirestoreTransaction,
+) => {
+  const promises = [];
+  for (const book of books) {
+    promises.push(
+      fs.deleteDocument(firestoreUtil.COLLECTION_PATH.T_MANGA, book.documentId),
+    );
+  }
+  await Promise.all(promises);
+};
+
 export const deleteBookshelfBooks = async (
   books: SimpleBook[],
   fs: firestoreUtil.FirestoreTransaction,

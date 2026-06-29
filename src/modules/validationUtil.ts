@@ -632,6 +632,106 @@ export const isNotConflictBookshelfBooks = async (
   await Promise.all(promises);
 };
 
+const MANGA_STATUSES = ["toread", "reading", "read"];
+
+export const isValidManga = (res: Response, params: models.MangaParams) => {
+  try {
+    throwInvalidParam(params.bookName, isExist);
+    throwInvalidParam(params.user, isExist);
+    throwInvalidParam(params.status, isExist);
+    throwInvalidParam(params.status, (v: string) => MANGA_STATUSES.includes(v));
+
+    if (params.isbn) throwInvalidParam(params.isbn, isIsbn);
+
+    if (params.publishedMonth) {
+      throwInvalidParam(params.publishedMonth, isYearMonthStr);
+      throwInvalidParam(params.publishedMonth, isValidYearMonth);
+    }
+
+    if (params.coverUrl) throwInvalidParam(params.coverUrl, isUrl);
+  } catch (e) {
+    systemLogger.error(e);
+    errorUtil.throwError(
+      res,
+      "不正なパラメータがあります",
+      util.STATUS_CODES.BAD_REQUEST
+    );
+  }
+};
+
+export const isValidUpdateManga = (
+  res: Response,
+  params: models.MangaParams
+) => {
+  try {
+    throwInvalidParam(params.documentId, isExist);
+    throwInvalidParam(params.updateAt, isExist);
+    throwInvalidParam(params.updateAt, isNumber);
+  } catch (e) {
+    systemLogger.error(e);
+    errorUtil.throwError(
+      res,
+      "不正なパラメータがあります",
+      util.STATUS_CODES.BAD_REQUEST
+    );
+  }
+};
+
+export const isExistMangaId = async (
+  res: Response,
+  documentId: string,
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  const manga = await util.getManga(documentId, fs);
+  if (!isExist(manga)) {
+    errorUtil.throwError(
+      res,
+      "マンガが削除されています",
+      util.STATUS_CODES.BAD_REQUEST
+    );
+  }
+};
+
+export const isExistMangasId = async (
+  res: Response,
+  books: models.SimpleBook[],
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  const promises = [];
+  for (const book of books) {
+    promises.push(isExistMangaId(res, book.documentId, fs));
+  }
+  await Promise.all(promises);
+};
+
+export const isNotConflictManga = async (
+  res: Response,
+  documentId: string,
+  updateAt: number | null,
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  const manga = await util.getManga(documentId, fs);
+  if (!manga || manga.update_at.seconds !== updateAt) {
+    errorUtil.throwError(
+      res,
+      "マンガの情報が更新されています",
+      util.STATUS_CODES.CONFLICT
+    );
+  }
+};
+
+export const isNotConflictMangas = async (
+  res: Response,
+  books: models.SimpleBook[],
+  fs: firestoreUtil.FirestoreTransaction
+) => {
+  const promises = [];
+  for (const book of books) {
+    promises.push(isNotConflictManga(res, book.documentId, book.updateAt, fs));
+  }
+  await Promise.all(promises);
+};
+
 export const isValidSimpleBookshelfBook = async (
   res: Response,
   params: models.SimpleBookshelfBookParams

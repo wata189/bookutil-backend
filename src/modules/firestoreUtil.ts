@@ -134,4 +134,5 @@ export const COLLECTION_PATH = {
   T_TOREAD_BOOK: "/t_toread_book",
   T_NEW_BOOK: "/t_new_book",
   T_BOOKSHELF_BOOK: "/t_bookshelf_book",
+  T_MANGA: "/t_manga",
 };
