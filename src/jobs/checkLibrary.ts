@@ -61,7 +61,6 @@ const checkLibrary = async (fs: firestoreUtil.FirestoreTransaction) => {
     const updateTags = book.tags.filter((tag) => !tag.includes("図書館"));
     // 今の図書館タグ追加する
     updateTags.push(library.city + "図書館");
-    updateTags.push("よみたい");
 
     //DB更新
     const bookParams: models.BookParams = {
